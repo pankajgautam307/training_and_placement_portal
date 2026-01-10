@@ -1,5 +1,7 @@
 from app import create_app, db
-from models import AdminUser
+import models
+from models import AdminUser, Student
+
 
 def init_db():
     app = create_app()
