@@ -1,8 +1,0 @@
-[phases.setup]
-nixPkgs = ["python3", "cairo", "pango", "gdk-pixbuf", "libffi", "zlib", "jpeg", "openjpeg", "pkg-config", "gcc"]
-
-[phases.install]
-cmds = ["pip install -r requirements.txt"]
-
-[start]
-cmd = "gunicorn app:app"
