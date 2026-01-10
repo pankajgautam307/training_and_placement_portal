@@ -18,4 +18,4 @@ ENV PATH="/app/.venv/bin:$PATH"
 # Railway will inject PORT
 ENV PORT=8000
 
-CMD gunicorn app:app --bind 0.0.0.0:${PORT}
+CMD python init_db.py && gunicorn app:app --bind 0.0.0.0:${PORT}
