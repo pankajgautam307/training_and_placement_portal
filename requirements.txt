@@ -9,3 +9,5 @@ pandas
 openpyxl
 python-dotenv
 xhtml2pdf
+gunicorn
+psycopg2-binary
