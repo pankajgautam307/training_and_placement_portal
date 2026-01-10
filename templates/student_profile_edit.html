@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card bg-dark border-0 shadow">
+            <div class="card-header border-0 d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">Edit Profile</h4>
+                <a href="{{ url_for('student.dashboard') }}" class="btn btn-sm btn-outline-light">Back</a>
+            </div>
+            <div class="card-body p-4">
+
+                {% if current_user.status == 'Approved' %}
+                <div class="alert alert-info bg-dark border-info text-info mb-4">
+                    <i class="fa-solid fa-circle-info me-2"></i>
+                    Since your profile is <strong>Approved</strong>, any changes you make will require <strong>Admin
+                        Approval</strong> before being reflected.
+                </div>
+                {% endif %}
+
+                <form method="post" enctype="multipart/form-data">
+                    {{ form.hidden_tag() }}
+
+                    <h5 class="text-warning mb-3 border-bottom border-secondary pb-2">Personal Details</h5>
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label text-white">Profile Photo</label>
+                            {{ form.profile_photo(class="form-control bg-dark text-white border-secondary") }}
+                            {% if form.profile_photo.errors %}
+                            <div class="text-danger small">{{ form.profile_photo.errors[0] }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-white">Resume (PDF)</label>
+                            {{ form.resume(class="form-control bg-dark text-white border-secondary") }}
+                            {% if form.resume.errors %}
+                            <div class="text-danger small">{{ form.resume.errors[0] }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-white">Roll Number</label>
+                            <input type="text" class="form-control bg-dark text-white-50 border-secondary"
+                                value="{{ current_user.roll_no }}" readonly>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-white">Email</label>
+                            <input type="text" class="form-control bg-dark text-white-50 border-secondary"
+                                value="{{ current_user.email }}" readonly>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.name.label(class="form-label text-white") }}
+                            {{ form.name(class="form-control" + (" is-invalid" if form.name.errors else "")) }}
+                            {% for error in form.name.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.fathers_name.label(class="form-label text-white") }}
+                            {{ form.fathers_name(class="form-control" + (" is-invalid" if form.fathers_name.errors else
+                            "")) }}
+                            {% for error in form.fathers_name.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.college_name.label(class="form-label text-white") }}
+                            {{ form.college_name(class="form-control" + (" is-invalid" if form.college_name.errors else
+                            "")) }}
+                            {% for error in form.college_name.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.mobile.label(class="form-label text-white") }}
+                            {{ form.mobile(class="form-control" + (" is-invalid" if form.mobile.errors else "")) }}
+                            {% for error in form.mobile.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            {{ form.dob.label(class="form-label text-white") }}
+                            {{ form.dob(class="form-control" + (" is-invalid" if form.dob.errors else "")) }}
+                            {% for error in form.dob.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            {{ form.gender.label(class="form-label text-white") }}
+                            {{ form.gender(class="form-select" + (" is-invalid" if form.gender.errors else "")) }}
+                            {% for error in form.gender.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            {{ form.address.label(class="form-label text-white") }}
+                            {{ form.address(class="form-control" + (" is-invalid" if form.address.errors else "")) }}
+                            {% for error in form.address.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+
+                    <h5 class="text-warning mb-3 border-bottom border-secondary pb-2 mt-4">Academic Details</h5>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.department.label(class="form-label text-white") }}
+                            {{ form.department(class="form-select" + (" is-invalid" if form.department.errors else ""))
+                            }}
+                            {% for error in form.department.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.semester.label(class="form-label text-white") }}
+                            {{ form.semester(class="form-control" + (" is-invalid" if form.semester.errors else "")) }}
+                            {% for error in form.semester.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            {{ form.tenth_marks.label(class="form-label text-white") }}
+                            {{ form.tenth_marks(class="form-control" + (" is-invalid" if form.tenth_marks.errors else
+                            "")) }}
+                            {% for error in form.tenth_marks.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            {{ form.twelfth_marks.label(class="form-label text-white") }}
+                            {{ form.twelfth_marks(class="form-control" + (" is-invalid" if form.twelfth_marks.errors
+                            else "")) }}
+                            {% for error in form.twelfth_marks.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            {{ form.cgpa.label(class="form-label text-white") }}
+                            {{ form.cgpa(class="form-control" + (" is-invalid" if form.cgpa.errors
+                            else "")) }}
+                            {% for error in form.cgpa.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <h5 class="text-warning mb-3 border-bottom border-secondary pb-2 mt-4">Skills & Projects</h5>
+                    <div class="mb-3">
+                        {{ form.skills.label(class="form-label text-white") }}
+                        {{ form.skills(class="form-control" + (" is-invalid" if form.skills.errors else "")) }}
+                        {% for error in form.skills.errors %}
+                        <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.projects_internship.label(class="form-label text-white") }}
+                        {{ form.projects_internship(class="form-control" + (" is-invalid" if
+                        form.projects_internship.errors else ""), rows=4) }}
+                        {% for error in form.projects_internship.errors %}
+                        <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="d-grid mt-4">
+                        {{ form.submit(class="btn btn-success fw-bold") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

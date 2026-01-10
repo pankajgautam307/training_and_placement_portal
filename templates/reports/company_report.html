@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        @page {
+            size: landscape;
+            margin: 1cm;
+        }
+
+        body {
+            font-family: sans-serif;
+            font-size: 10px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 6px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+
+        .footer {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            text-align: right;
+            font-size: 8px;
+            color: #666;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Registered Companies Report</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Company Name</th>
+                <th>Email</th>
+                <th>Website</th>
+                <th>Location</th>
+                <th>Industry</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for c in companies %}
+            <tr>
+                <td>{{ c.name }}</td>
+                <td>{{ c.email }}</td>
+                <td>{{ c.website }}</td>
+                <td>{{ c.location }}</td>
+                <td>{{ c.industry }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <div class="footer">
+        Downloaded on: {{ download_time }}
+    </div>
+</body>
+
+</html>

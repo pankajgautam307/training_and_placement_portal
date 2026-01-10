@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fa-solid fa-briefcase me-2"></i>Placement Drives</h2>
+        <a href="{{ url_for('student.dashboard') }}" class="btn btn-outline-light">Back to Dashboard</a>
+    </div>
+
+    <div class="row">
+        {% for drive in drives %}
+        <div class="col-md-6 mb-4">
+            <div class="card bg-dark border-secondary h-100 shadow-sm relative-container">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h5 class="card-title text-warning fw-bold mb-1">{{ drive.job_title }}</h5>
+                            <div class="text-white fs-5">{{ drive.company.name }}</div>
+                        </div>
+                        <div class="text-end">
+                            {% if drive.id in applied_drive_ids %}
+                            <span class="badge bg-success fs-6"><i class="fa-solid fa-check me-1"></i>Applied</span>
+                            {% else %}
+                            <span class="badge bg-info text-dark">Open</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <p class="card-text text-white-50 small mb-3">{{ (drive.job_description or '') | truncate(150) }}
+                    </p>
+
+                    <div class="row g-2 mb-3 small text-white">
+                        <div class="col-6">
+                            <i class="fa-solid fa-money-bill-wave text-success me-2"></i>{{ drive.salary or 'Not
+                            disclosed' }}
+                        </div>
+                        <div class="col-6">
+                            <i class="fa-solid fa-calendar-alt text-info me-2"></i>Apply by {{
+                            drive.deadline.strftime('%d %b %Y') if drive.deadline else 'N/A' }}
+                        </div>
+                        <div class="col-12 text-white-50 mt-2">
+                            <strong>Eligibility:</strong>
+                            {% if drive.criteria_cgpa > 0 %}Diploma CGPA >= {{ drive.criteria_cgpa }}{% endif %}
+                            {% if drive.allowed_branches %}| {{ drive.allowed_branches }}{% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-top border-secondary">
+                    {% if drive.id in applied_drive_ids %}
+                    <button class="btn btn-outline-success w-100" disabled>Application Submitted</button>
+
+                    {% if drive.quizzes_list %}
+                    {% for quiz in drive.quizzes_list %}
+                    {% if quiz.is_live or (quiz.live_at and quiz.live_at <= datetime.now()) %} <a
+                        href="{{ url_for('student.take_quiz', quiz_id=quiz.id) }}" class="btn btn-warning w-100 mt-2">
+                        <i class="fa-solid fa-pen-to-square me-1"></i>Take Assessment
+                        </a>
+                        {% endif %}
+                        {% endfor %}
+                        {% endif %}
+
+                        {% else %}
+                        <form action="{{ url_for('student.apply_drive', drive_id=drive.id) }}" method="post">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                            <button type="submit" class="btn btn-primary w-100">Apply Now</button>
+                        </form>
+                        {% endif %}
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-12 py-5 text-center text-white-50">
+            <i class="fa-solid fa-folder-open fa-3x mb-3"></i>
+            <h4>No active placement drives found.</h4>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

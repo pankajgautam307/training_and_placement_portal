@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+{% block content %}
+<div id="admin-spa-wrapper" class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-0">{% block admin_title %}Dashboard{% endblock %}</h2>
+        </div>
+        {% block admin_header_actions %}
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-light btn-sm">
+                <i class="fa-solid fa-home me-1"></i> Dashboard
+            </a>
+        </div>
+        {% endblock %}
+    </div>
+
+    <div class="row">
+        <!-- Persistent Sidebar (Quick Actions) -->
+        <div class="col-lg-3 mb-4">
+            <div class="card bg-dark border-0 shadow h-100">
+                <div class="card-header bg-transparent border-secondary">
+                    <h5 class="mb-0 text-info"><i class="fa-solid fa-bars me-2"></i>Menu</h5>
+                </div>
+                <div class="card-body p-2">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('admin.dashboard') }}"
+                            class="btn btn-outline-light text-start {{ 'active' if request.endpoint == 'admin.dashboard' else '' }}">
+                            <i class="fa-solid fa-chart-line me-2 w-20"></i>Dashboard
+                        </a>
+
+                        <div class="text-secondary small text-uppercase mt-2 ps-2 fw-bold">Management</div>
+
+                        <a href="{{ url_for('admin.list_students') }}"
+                            class="btn btn-outline-light text-start {{ 'active' if request.endpoint in ['admin.list_students', 'admin.bulk_import', 'admin.student_edit'] else '' }}">
+                            <i class="fa-solid fa-users-gear me-2 w-20"></i>Students
+                        </a>
+
+                        <a href="{{ url_for('admin.list_companies') }}"
+                            class="btn btn-outline-light text-start {{ 'active' if request.endpoint in ['admin.list_companies', 'admin.invite_company'] else '' }}">
+                            <i class="fa-solid fa-building me-2 w-20"></i>Companies
+                        </a>
+
+                        <div class="text-secondary small text-uppercase mt-2 ps-2 fw-bold">Placement</div>
+
+                        <a href="{{ url_for('admin.list_drives') }}"
+                            class="btn btn-outline-light text-start {{ 'active' if request.endpoint in ['admin.list_drives', 'admin.create_drive', 'admin.edit_drive', 'admin.list_applicants'] else '' }}">
+                            <i class="fa-solid fa-bullhorn me-2 w-20"></i>Drives & Jobs
+                        </a>
+
+                        <a href="{{ url_for('admin.list_quizzes') }}"
+                            class="btn btn-outline-light text-start {{ 'active' if request.endpoint in ['admin.list_quizzes', 'admin.create_quiz', 'admin.edit_quiz', 'admin.view_quiz', 'admin.view_quiz_results', 'admin.view_quiz_report'] else '' }}">
+                            <i class="fa-solid fa-list-check me-2 w-20"></i>Assessments
+                        </a>
+
+                        <a href="{{ url_for('admin.tech_match') }}"
+                            class="btn btn-outline-light text-start {{ 'active' if request.endpoint == 'admin.tech_match' else '' }}">
+                            <i class="fa-solid fa-code-branch me-2 w-20"></i>Tech Match
+                        </a>
+
+                        <div class="text-secondary small text-uppercase mt-2 ps-2 fw-bold">Requests</div>
+
+                        <a href="{{ url_for('admin.list_requests') }}"
+                            class="btn btn-outline-light text-start {{ 'active' if request.endpoint == 'admin.list_requests' else '' }}">
+                            <i class="fa-solid fa-clipboard-check me-2 w-20"></i>Updates
+                            {% if pending_count and pending_count > 0 %}
+                            <span class="badge bg-warning text-dark float-end">{{ pending_count }}</span>
+                            {% endif %}
+                        </a>
+
+                        <a href="{{ url_for('admin.list_invitations') }}"
+                            class="btn btn-outline-light text-start {{ 'active' if request.endpoint == 'admin.list_invitations' else '' }}">
+                            <i class="fa-solid fa-paper-plane me-2 w-20"></i>Invitations
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dynamic Content Area -->
+        <div class="col-lg-9 mb-4">
+            {% block admin_content %}{% endblock %}
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Intercept clicks on the sidebar links
+        const sidebarLinks = document.querySelectorAll('.col-lg-3 .btn-outline-light');
+        const mainWrapper = document.getElementById('admin-spa-wrapper');
+
+        function handleNavigation(url, push = true) {
+            // Add loading indicator opacity
+            mainWrapper.style.opacity = '0.5';
+            mainWrapper.style.transition = 'opacity 0.2s';
+
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    return response.text();
+                })
+                .then(html => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    const newContent = doc.getElementById('admin-spa-wrapper');
+
+                    if (newContent) {
+                        mainWrapper.innerHTML = newContent.innerHTML;
+                        // Re-attach listeners is not needed because we are replacing innerHTML, 
+                        // BUT the listeners were attached to elements that might be replaced if I replaced the wrapper itself.
+                        // Wait, mainWrapper is the container. I am replacing its innerHTML.
+                        // So the sidebar IS replaced. I need to re-attach listeners to the NEW sidebar links!
+                        attachListeners();
+
+                        if (push) {
+                            window.history.pushState({ url: url }, '', url);
+                        }
+                    } else {
+                        // Fallback if target not found (e.g. login page redirect)
+                        window.location.href = url;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading content:', error);
+                    window.location.href = url; // Fallback
+                })
+                .finally(() => {
+                    mainWrapper.style.opacity = '1';
+                });
+        }
+
+        function attachListeners() {
+            const newSidebarLinks = document.querySelectorAll('.col-lg-3 .btn-outline-light');
+            newSidebarLinks.forEach(link => {
+                link.addEventListener('click', function (e) {
+                    const href = this.getAttribute('href');
+                    if (href && href !== '#' && !href.includes('logout')) {
+                        e.preventDefault();
+                        handleNavigation(href);
+                    }
+                });
+            });
+        }
+
+        // Initial attach
+        attachListeners();
+
+        // Handle back/forward interactions
+        window.addEventListener('popstate', function (e) {
+            if (e.state && e.state.url) {
+                handleNavigation(e.state.url, false);
+            } else {
+                handleNavigation(window.location.href, false);
+            }
+        });
+    });
+</script>
+{% endblock %}

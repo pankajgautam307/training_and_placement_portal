@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        @page {
+            size: a3 landscape;
+            margin: 1cm;
+        }
+
+        body {
+            font-family: sans-serif;
+            font-size: 9px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 4px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+
+        .footer {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            text-align: right;
+            font-size: 8px;
+            color: #666;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Placement Drives Report</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Job Title</th>
+                <th>Company</th>
+                <th>Date</th>
+                <th>Venue</th>
+                <th>Mode</th>
+                <th>Deadline</th>
+                <th>Salary</th>
+                <th>CGPA Cutoff</th>
+                <th>10th Cutoff</th>
+                <th>12th Cutoff</th>
+                <th>Allowed Branches</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for d in drives %}
+            <tr>
+                <td>{{ d.job_title }}</td>
+                <td>{{ d.company.name }}</td>
+                <td>{{ d.drive_date.strftime('%Y-%m-%d') if d.drive_date else 'N/A' }}</td>
+                <td>{{ d.venue }}</td>
+                <td>{{ d.mode }}</td>
+                <td>{{ d.deadline.strftime('%Y-%m-%d') if d.deadline else 'N/A' }}</td>
+                <td>{{ d.salary }}</td>
+                <td>{{ d.criteria_cgpa }}</td>
+                <td>{{ d.criteria_10th }}</td>
+                <td>{{ d.criteria_12th }}</td>
+                <td>{{ d.allowed_branches }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <div class="footer">
+        Downloaded on: {{ download_time }}
+    </div>
+</body>
+
+</html>

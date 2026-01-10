@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-md-12 text-center">
+            <h2 class="text-white"><i class="fa-solid fa-file-pdf me-2"></i>Resume Builder</h2>
+            <p class="text-white-50">Select a template to generate your resume instantly</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card bg-dark border-0 shadow-lg h-100">
+                <div class="card-body">
+                    <form action="{{ url_for('student.generate_resume') }}" method="POST" target="_blank"
+                        id="resumeForm">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+
+                        <div class="mb-4">
+                            <label class="form-label text-white h5 mb-3">Choose Template</label>
+                            <div class="d-grid gap-2">
+                                {% set templates = ['Modern', 'Classic', 'Minimal', 'Creative', 'Professional'] %}
+                                {% for template in templates %}
+                                <input type="radio" class="btn-check" name="template" id="t_{{ template }}"
+                                    value="{{ template|lower }}" {% if loop.first %}checked{% endif %}
+                                    autocomplete="off" onchange="updatePreview()">
+                                <label class="btn btn-outline-light text-start" for="t_{{ template }}"><i
+                                        class="fa-solid fa-file-lines me-2"></i>{{ template
+                                    }}</label>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <hr class="border-secondary">
+                        <h5 class="text-white mb-3">Additional Details</h5>
+                        <div class="mb-3">
+                            <label class="form-label text-white-50 small">Aim in Life / Career Objective</label>
+                            <textarea class="form-control form-control-sm bg-secondary text-white border-0 resume-input"
+                                name="aim" rows="2">{{ resume_data.aim }}</textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-white-50 small">Strengths & Weaknesses</label>
+                            <input type="text"
+                                class="form-control form-control-sm bg-secondary text-white border-0 resume-input"
+                                name="strengths" placeholder="Strengths" value="{{ resume_data.strengths }}">
+                            <input type="text"
+                                class="form-control form-control-sm bg-secondary text-white border-0 mt-1 resume-input"
+                                name="weaknesses" placeholder="Weaknesses" value="{{ resume_data.weaknesses }}">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-white-50 small">Hobbies</label>
+                            <input type="text"
+                                class="form-control form-control-sm bg-secondary text-white border-0 resume-input"
+                                name="hobbies" placeholder="e.g. Reading, coding" value="{{ resume_data.hobbies }}">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-white-50 small">School Details (10th/12th)</label>
+                            <input type="text"
+                                class="form-control form-control-sm bg-secondary text-white border-0 mb-1 resume-input"
+                                name="school_12_name" placeholder="Class 12 School Name"
+                                value="{{ resume_data.school_12_name }}">
+                            <input type="text"
+                                class="form-control form-control-sm bg-secondary text-white border-0 mb-2 resume-input"
+                                name="school_12_year" placeholder="Class 12 Passing Year"
+                                value="{{ resume_data.school_12_year }}">
+
+                            <input type="text"
+                                class="form-control form-control-sm bg-secondary text-white border-0 mb-1 resume-input"
+                                name="school_10_name" placeholder="Class 10 School Name"
+                                value="{{ resume_data.school_10_name }}">
+                            <input type="text"
+                                class="form-control form-control-sm bg-secondary text-white border-0 resume-input"
+                                name="school_10_year" placeholder="Class 10 Passing Year"
+                                value="{{ resume_data.school_10_year }}">
+                        </div>
+
+                        <div class="d-grid mt-3 mb-3">
+                            <button type="button" class="btn btn-outline-info btn-sm" onclick="saveData()">
+                                <i class="fa-solid fa-save me-1"></i> Update & Save
+                            </button>
+                        </div>
+
+                        <div class="alert alert-info bg-secondary bg-opacity-10 border-0 text-light small">
+                            <i class="fa-solid fa-info-circle me-1"></i>
+                            Pulls base data from <a href="{{ url_for('student.edit_profile') }}"
+                                class="alert-link text-warning">Profile</a>.
+                        </div>
+
+                        <div class="d-grid mt-4">
+                            <button type="submit" class="btn btn-warning fw-bold">
+                                <i class="fa-solid fa-file-arrow-down me-2"></i>Download PDF
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Preview Pane -->
+        <div class="col-md-8">
+            <div class="card bg-secondary border-0 shadow">
+                <div class="card-header bg-dark border-0 d-flex justify-content-between align-items-center">
+                    <span class="text-white small"><i class="fa-solid fa-eye me-2"></i>Live Preview</span>
+                    <span id="saveStatus" class="badge bg-success"
+                        style="opacity: 0; transition: opacity 0.5s;">Saved</span>
+                </div>
+                <div class="card-body p-0 d-flex justify-content-center overflow-hidden"
+                    style="background: #525659; min-height: 600px;">
+                    <iframe id="previewFrame"
+                        style="width: 210mm; height: 297mm; border: none; background: white; transform: scale(0.75); transform-origin: top center; margin-top: 20px;"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    async function saveData() {
+        const inputs = document.querySelectorAll('.resume-input');
+        const data = {};
+        inputs.forEach(input => {
+            data[input.name] = input.value;
+        });
+
+        // Show saving...
+        const status = document.getElementById('saveStatus');
+        status.innerText = "Saving...";
+        status.className = "badge bg-warning";
+        status.style.opacity = 1;
+
+        try {
+            const response = await fetch("{{ url_for('student.save_resume_data') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': "{{ csrf_token() }}"
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (response.ok) {
+                status.innerText = "Saved";
+                status.className = "badge bg-success";
+                setTimeout(() => { status.style.opacity = 0; }, 2000);
+                updatePreview(); // Refresh preview
+            } else {
+                status.innerText = "Error";
+                status.className = "badge bg-danger";
+            }
+        } catch (e) {
+            console.error(e);
+            status.innerText = "Error";
+            status.className = "badge bg-danger";
+        }
+    }
+
+    function updatePreview() {
+        const template = document.querySelector('input[name="template"]:checked').value;
+        const iframe = document.getElementById('previewFrame');
+        // Reload iframe content
+        iframe.src = "{{ url_for('student.preview_resume_html') }}?template=" + template;
+    }
+
+    // Auto-save on input change (debounced)
+    let timeout = null;
+    document.querySelectorAll('.resume-input').forEach(input => {
+        input.addEventListener('input', () => {
+            clearTimeout(timeout);
+            timeout = setTimeout(saveData, 1000);
+        });
+    });
+
+    document.addEventListener('DOMContentLoaded', updatePreview);
+</script>
+{% endblock %}

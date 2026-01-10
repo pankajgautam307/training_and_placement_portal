@@ -1,0 +1,64 @@
+{% extends "admin_layout.html" %}
+
+{% block admin_title %}Bulk Import Students{% endblock %}
+
+{% block admin_header_actions %}
+<div class="d-flex gap-2">
+  <a href="{{ url_for('admin.download_sample') }}" class="btn btn-info btn-sm">
+    <i class="fa-solid fa-download me-1"></i> Sample CSV
+  </a>
+  <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-light btn-sm"><i class="fa-solid fa-home me-1"></i>
+    Dashboard</a>
+</div>
+{% endblock %}
+
+{% block admin_content %}
+<div class="row">
+  <div class="col-md-6">
+    <div class="card bg-edu text-light border-0 mb-4">
+      <div class="card-body">
+        <h5 class="card-title">Upload Excel / CSV</h5>
+        <p class="card-text text-white-50 small">
+          Supported formats: .xlsx, .xls, .csv<br>
+          Columns required: roll_no, name, email, mobile, department, semester...
+        </p>
+
+        <form method="post" enctype="multipart/form-data">
+          {{ form.hidden_tag() }}
+          <div class="mb-3">
+            {{ form.file.label(class="form-label") }}
+            {{ form.file(class="form-control") }}
+            {% for error in form.file.errors %}
+            <div class="text-danger mt-1">{{ error }}</div>
+            {% endfor %}
+          </div>
+          <button type="submit" class="btn btn-success">
+            <i class="fa-solid fa-upload me-1"></i> Import Data
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    {% if summary %}
+    <div class="card bg-edu text-light border-0">
+      <div class="card-body">
+        <h5 class="card-title">Import Summary</h5>
+        <ul class="list-group list-group-flush bg-transparent">
+          <li class="list-group-item bg-transparent text-success">
+            Inserted: <strong>{{ summary.inserted }}</strong>
+          </li>
+          <li class="list-group-item bg-transparent text-info">
+            Updated: <strong>{{ summary.updated }}</strong>
+          </li>
+          <li class="list-group-item bg-transparent text-danger">
+            Errors: <strong>{{ summary.errors }}</strong>
+          </li>
+        </ul>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,94 @@
+{% extends "admin_layout.html" %}
+
+{% block admin_title %}
+{% if quiz %}Edit Quiz{% else %}Create New Quiz{% endif %}
+{% endblock %}
+
+{% block admin_header_actions %}
+<div class="d-flex gap-2">
+    <a href="{{ url_for('admin.list_quizzes') }}" class="btn btn-outline-light btn-sm"><i
+            class="fa-solid fa-arrow-left me-1"></i> Back to Quizzes</a>
+</div>
+{% endblock %}
+
+{% block admin_content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card bg-edu text-white border-0 shadow">
+            <div class="card-header border-secondary">
+                <h4 class="mb-0">{% if quiz %}Edit Quiz Details{% else %}New Quiz Details{% endif %}</h4>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {{ form.hidden_tag() }}
+                    <div class="mb-3">
+                        {{ form.title.label(class="form-label") }}
+                        {{ form.title(class="form-control") }}
+                        {% for error in form.title.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    <div class="mb-3">
+                        <div class="row">
+                            <div class="col-md-6">
+                                {{ form.time_limit.label(class="form-label") }}
+                                {{ form.time_limit(class="form-control" + (" is-invalid" if form.time_limit.errors else
+                                "")) }}
+                                {% for error in form.time_limit.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.pass_percentage.label(class="form-label") }}
+                                <div class="input-group">
+                                    {{ form.pass_percentage(class="form-control" + (" is-invalid" if
+                                    form.pass_percentage.errors else "")) }}
+                                    <span class="input-group-text bg-secondary text-light">%</span>
+                                </div>
+                                {% for error in form.pass_percentage.errors %}
+                                <div class="invalid-feedback d-block">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        {{ form.description.label(class="form-label") }}
+                        {{ form.description(class="form-control", rows=3) }}
+                    </div>
+
+
+                    <div class="mb-3">
+                        {{ form.drive_id.label(class="form-label") }}
+                        {{ form.drive_id(class="form-select") }}
+                        <div class="form-text text-white-50">Link this quiz to a placement drive.</div>
+                    </div>
+
+                    {% if quiz and quiz.questions|length > 0 %}
+                    <div class="mb-3 form-check">
+                        {{ form.is_live(class="form-check-input") }}
+                        {{ form.is_live.label(class="form-check-label") }}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.live_at.label(class="form-label") }}
+                        {{ form.live_at(class="form-control") }}
+                        <div class="form-text text-white-50">Optional: Schedule when it automatically becomes live.
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info small mt-3">
+                        <i class="fa-solid fa-info-circle me-1"></i>You can make this quiz Live or Schedule it after
+                        adding
+                        questions.
+                    </div>
+                    {% endif %}
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{{ url_for('admin.list_quizzes') }}" class="btn btn-outline-light">Cancel</a>
+                        {{ form.submit(class="btn btn-warning") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

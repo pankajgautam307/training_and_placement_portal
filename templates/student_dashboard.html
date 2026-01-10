@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row">
+  <div class="col-lg-4 mb-3">
+    <div class="card bg-edu border-0 text-light h-100">
+      <div class="card-body">
+        <div class="text-center mb-3">
+          <img
+            src="{{ url_for('static', filename=student.profile_photo) if student.profile_photo else 'https://via.placeholder.com/150' }}"
+            alt="Profile Photo" class="rounded-circle border border-3 border-warning"
+            style="width: 120px; height: 120px; object-fit: cover;">
+        </div>
+        <h5 class="card-title text-center mb-1">
+          <i class="fa-solid fa-user-graduate me-2"></i>Profile Summary
+        </h5>
+        <hr class="border-light">
+        <p><strong>Name:</strong> {{ student.name }}</p>
+        <p><strong>Roll No:</strong> {{ student.roll_no }}</p>
+        <p><strong>Status:</strong>
+          <span class="badge
+            {% if student.status == 'Approved' %}bg-success
+            {% elif student.status == 'Rejected' %}bg-danger
+            {% else %}bg-warning text-dark{% endif %}">
+            {{ student.status }}
+          </span>
+        </p>
+        <p><strong>Department:</strong> {{ student.department }}</p>
+        <p><strong>Semester:</strong> {{ student.semester }}</p>
+        <p><strong>Email:</strong> {{ student.email }}</p>
+        <p><strong>Mobile:</strong> {{ student.mobile }}</p>
+        <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-light btn-sm">
+          <i class="fa-solid fa-right-from-bracket me-1"></i> Logout
+        </a>
+      </div>
+    </div>
+
+
+  </div>
+
+  <div class="col-lg-8 mb-3">
+    <div class="card bg-edu border-0 text-light mb-3">
+      <div class="card-body">
+        <h5 class="card-title">
+          <i class="fa-solid fa-chart-line me-2"></i>Academic Details
+        </h5>
+        <hr class="border-light">
+        <div class="row">
+          <div class="col-md-4">
+            <p><strong>10th %:</strong> {{ student.tenth_marks or '-' }}</p>
+          </div>
+          <div class="col-md-4">
+            <p><strong>12th %:</strong> {{ student.twelfth_marks or '-' }}</p>
+          </div>
+          <div class="col-md-4">
+            <p><strong>Diploma CGPA:</strong> {{ student.cgpa or '-' }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card bg-edu border-0 text-light">
+      <div class="card-body">
+        <h5 class="card-title">
+          <i class="fa-solid fa-laptop-code me-2"></i>Skills & Projects
+        </h5>
+        <hr class="border-light">
+        <p><strong>Skills:</strong> {{ student.skills or 'Not added yet' }}</p>
+        <p><strong>Projects / Internships:</strong></p>
+        <p class="mb-3">{{ student.projects_internship or 'Not added yet' }}</p>
+
+        <p><strong>Resume:</strong>
+          {% if student.resume_path %}
+          <a href="{{ url_for('static', filename=student.resume_path) }}" target="_blank"
+            class="text-warning text-decoration-none">
+            <i class="fa-solid fa-file-pdf me-1"></i>View Uploaded Resume
+          </a>
+          {% else %}
+          <span class="text-white-50">Not uploaded</span>
+          {% endif %}
+        </p>
+
+        <div class="mt-3">
+          <a href="{{ url_for('student.resume_builder') }}" class="btn btn-outline-info w-100">
+            <i class="fa-solid fa-wand-magic-sparkles me-2"></i>Generate Resume from Profile
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

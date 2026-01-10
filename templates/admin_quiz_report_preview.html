@@ -1,0 +1,75 @@
+{% extends "admin_layout.html" %}
+
+{% block admin_title %}Detailed Report: {{ quiz.title }}{% endblock %}
+
+{% block admin_header_actions %}
+<div class="d-flex gap-2">
+    <a href="{{ url_for('admin.download_quiz_report', quiz_id=quiz.id) }}" class="btn btn-success btn-sm me-2">
+        <i class="fa-solid fa-file-csv me-1"></i>Download CSV
+    </a>
+    <a href="{{ url_for('admin.view_quiz_results', quiz_id=quiz.id) }}" class="btn btn-outline-light btn-sm"><i
+            class="fa-solid fa-arrow-left me-1"></i> Back to Results</a>
+</div>
+{% endblock %}
+
+{% block admin_content %}
+<div class="card bg-dark border-0 shadow">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-dark table-hover mb-0 align-middle table-bordered">
+                <thead class="text-secondary small text-uppercase text-nowrap">
+                    <tr>
+                        <th class="sticky-start bg-dark">Roll No</th>
+                        <th class="sticky-start bg-dark" style="left: 100px;">Name</th>
+                        <th>Score</th>
+                        <th>Status</th>
+                        {% for i in range(questions|length) %}
+                        <th title="{{ questions[i].question_text }}">Q{{ i+1 }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody class="text-nowrap">
+                    {% for row in report_data %}
+                    <tr>
+                        <td class="sticky-start bg-dark">{{ row.student.roll_no }}</td>
+                        <td class="sticky-start bg-dark" style="left: 100px;">{{ row.student.name }}</td>
+                        <td class="fw-bold">{{ row.score }} / {{ row.total }}</td>
+                        <td>
+                            {% if row.passed %}
+                            <span class="text-success">Passed</span>
+                            {% else %}
+                            <span class="text-danger">Failed</span>
+                            {% endif %}
+                        </td>
+                        {% for q in questions %}
+                        {% set ans = row.answers.get(q.id|string) %}
+                        <td
+                            class="{{ 'table-success' if ans == q.correct_option else 'table-danger' if ans else '' }} text-dark">
+                            {{ ans or '-' }}
+                            {% if ans %}
+                            {% if ans == q.correct_option %}
+                            <i class="fa-solid fa-check small ms-1"></i>
+                            {% else %}
+                            <i class="fa-solid fa-xmark small ms-1"></i> ({{ q.correct_option }})
+                            {% endif %}
+                            {% endif %}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+    .sticky-start {
+        position: sticky;
+        left: 0;
+        z-index: 10;
+        /* Ensure background is opaque for sticky elements */
+        background-color: var(--bs-dark);
+    }
+</style>
+{% endblock %}

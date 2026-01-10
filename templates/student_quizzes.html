@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fa-solid fa-pen-to-square me-2"></i>Assessments</h2>
+        <a href="{{ url_for('student.dashboard') }}" class="btn btn-outline-light">Back to Dashboard</a>
+    </div>
+
+    <div class="row">
+        {% if quizzes %}
+        {% for item in quizzes %}
+        <div class="col-md-6 mb-4">
+            <div class="card bg-dark border-0 shadow h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <h5 class="card-title fw-bold text-white">{{ item.quiz.title }}</h5>
+                        <span class="badge bg-secondary">{{ item.quiz.time_limit }} mins</span>
+                    </div>
+                    <p class="card-text text-white-50">{{ item.quiz.description or 'No description provided.' }}</p>
+                    {% if item.quiz.drive %}
+                    <div class="mb-2">
+                        <span class="badge bg-warning text-dark"><i class="fa-solid fa-briefcase me-1"></i>{{
+                            item.quiz.drive.job_title }}</span>
+                    </div>
+                    {% endif %}
+
+                    <div class="mt-3">
+                        {% if item.attempt %}
+                        <div
+                            class="alert alert-dark border-secondary py-2 d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="small text-white-50">Score:</div>
+                                <div
+                                    class="fw-bold fs-5 {{ 'text-success' if item.attempt.passed else 'text-danger' }}">
+                                    {{ item.attempt.score }} / {{ item.attempt.total_marks }}
+                                </div>
+                            </div>
+                            <span class="badge {{ 'bg-success' if item.attempt.passed else 'bg-danger' }}">
+                                {{ 'Passed' if item.attempt.passed else 'Failed' }}
+                            </span>
+                        </div>
+                        {% else %}
+                        <div class="d-grid">
+                            <a href="{{ url_for('student.take_quiz', quiz_id=item.quiz.id) }}"
+                                class="btn btn-primary">Start Assessment</a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="col-12 text-center text-white-50 py-5">
+            <h4>No assessments available.</h4>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

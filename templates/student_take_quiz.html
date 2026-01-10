@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <form method="post" id="quizForm">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+
+                <div class="d-flex justify-content-between align-items-center mb-4 sticky-top bg-dark py-3"
+                    style="z-index: 1000;">
+                    <h3 class="mb-0">{{ quiz.title }}</h3>
+                    <div class="d-flex align-items-center">
+                        <i class="fa-regular fa-clock me-2 text-warning"></i>
+                        <span id="timer" class="fw-bold fs-5 text-warning">00:00</span>
+                    </div>
+                </div>
+
+                {% for q in quiz.questions %}
+                <div class="card bg-dark text-white border-secondary mb-4">
+                    <div class="card-body">
+                        <div class="fw-bold fs-5 mb-3">Q{{ loop.index }}. {{ q.question_text }}</div>
+
+                        <div class="vstack gap-2">
+                            <div class="form-check p-3 border border-secondary rounded hover-bg-dark-light">
+                                <input class="form-check-input" type="radio" name="question_{{ q.id }}"
+                                    id="q{{ q.id }}_a" value="A">
+                                <label class="form-check-label w-100" for="q{{ q.id }}_a">
+                                    A) {{ q.option_a }}
+                                </label>
+                            </div>
+                            <div class="form-check p-3 border border-secondary rounded hover-bg-dark-light">
+                                <input class="form-check-input" type="radio" name="question_{{ q.id }}"
+                                    id="q{{ q.id }}_b" value="B">
+                                <label class="form-check-label w-100" for="q{{ q.id }}_b">
+                                    B) {{ q.option_b }}
+                                </label>
+                            </div>
+                            <div class="form-check p-3 border border-secondary rounded hover-bg-dark-light">
+                                <input class="form-check-input" type="radio" name="question_{{ q.id }}"
+                                    id="q{{ q.id }}_c" value="C">
+                                <label class="form-check-label w-100" for="q{{ q.id }}_c">
+                                    C) {{ q.option_c }}
+                                </label>
+                            </div>
+                            <div class="form-check p-3 border border-secondary rounded hover-bg-dark-light">
+                                <input class="form-check-input" type="radio" name="question_{{ q.id }}"
+                                    id="q{{ q.id }}_d" value="D">
+                                <label class="form-check-label w-100" for="q{{ q.id }}_d">
+                                    D) {{ q.option_d }}
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+
+                <div class="d-grid mb-5">
+                    <button type="submit" class="btn btn-primary btn-lg"
+                        onclick="if(confirm('Are you sure you want to submit?')) { isSubmitting = true; return true; } else { return false; }">Submit
+                        Assessment</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Refresh Prevention & Timer Logic
+    let limitMinutes = {{ quiz.time_limit }};
+    let timeRemaining = limitMinutes * 60;
+    let isSubmitting = false;
+
+    // Prevent accidental navigation/closing
+    window.addEventListener('beforeunload', function (e) {
+        if (!isSubmitting) {
+            e.preventDefault();
+            e.returnValue = ''; // Required for Chrome/Firefox
+        }
+    });
+
+    // Block F5 and Ctrl+R
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'F5' || e.keyCode === 116) {
+            e.preventDefault();
+            // alert('Refreshing is disabled.'); // Alert might be blocked or annoying, simply preventing default is often enough
+        }
+        if ((e.ctrlKey || e.metaKey) && (e.key === 'r' || e.keyCode === 82)) {
+            e.preventDefault();
+        }
+    });
+
+    function updateTimer() {
+        const minutes = Math.floor(timeRemaining / 60);
+        const seconds = timeRemaining % 60;
+
+        document.getElementById('timer').textContent =
+            `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+        if (timeRemaining <= 0) {
+            alert('Time is up! Submitting automatically.');
+            isSubmitting = true;
+            document.getElementById('quizForm').submit();
+        } else {
+            timeRemaining--;
+            setTimeout(updateTimer, 1000);
+        }
+    }
+
+    // Start timer on load
+    document.addEventListener('DOMContentLoaded', updateTimer);
+</script>
+
+<style>
+    .hover-bg-dark-light:hover {
+        background-color: rgba(255, 255, 255, 0.05);
+        cursor: pointer;
+    }
+</style>
+{% endblock %}

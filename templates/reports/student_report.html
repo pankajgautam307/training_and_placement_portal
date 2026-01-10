@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        @page {
+            size: a3 landscape;
+            margin: 1cm;
+        }
+
+        body {
+            font-family: sans-serif;
+            font-size: 9px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 4px;
+            text-align: left;
+            word-wrap: break-word;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+
+        .footer {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            text-align: right;
+            font-size: 8px;
+            color: #666;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Student Report</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Roll No</th>
+                <th>Name</th>
+                <th>Father's Name</th>
+                <th>College Name</th>
+                <th>Email</th>
+                <th>Mobile</th>
+                <th>Dept</th>
+                <th>Sem</th>
+                <th>CGPA</th>
+                <th>10th %</th>
+                <th>12th %</th>
+                <th>Status</th>
+                <th>Skills</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for s in students %}
+            <tr>
+                <td>{{ s.roll_no }}</td>
+                <td>{{ s.name }}</td>
+                <td>{{ s.fathers_name }}</td>
+                <td>{{ s.college_name }}</td>
+                <td>{{ s.email }}</td>
+                <td>{{ s.mobile }}</td>
+                <td>{{ s.department }}</td>
+                <td>{{ s.semester }}</td>
+                <td>{{ s.cgpa }}</td>
+                <td>{{ s.tenth_marks }}</td>
+                <td>{{ s.twelfth_marks }}</td>
+                <td>{{ s.status }}</td>
+                <td>{{ s.skills }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <div class="footer">
+        Downloaded on: {{ download_time }}
+    </div>
+</body>
+
+</html>

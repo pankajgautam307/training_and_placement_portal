@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="hero-header mb-4">
+      <div class="hero-overlay"></div>
+      <div class="hero-content p-4 text-center">
+        <h3 class="fw-bold mb-1">Student Registration</h3>
+        <p class="mb-0">Create your placement profile for Diploma IT & CS</p>
+      </div>
+    </div>
+
+    <div class="card bg-edu border-0 text-light">
+      <div class="card-body p-4">
+        <form method="post" class="row g-3 needs-validation" novalidate>
+          {{ form.hidden_tag() }}
+          <div class="col-md-4">
+            {{ form.roll_no.label(class="form-label") }}
+            {{ form.roll_no(class="form-control" + (" is-invalid" if form.roll_no.errors else "")) }}
+            {% for error in form.roll_no.errors %}
+            <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+          </div>
+          <div class="col-md-4">
+            {{ form.name.label(class="form-label") }}
+            {{ form.name(class="form-control" + (" is-invalid" if form.name.errors else "")) }}
+            {% for error in form.name.errors %}
+            <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+          </div>
+          <div class="col-md-4">
+            {{ form.fathers_name.label(class="form-label") }}
+            {{ form.fathers_name(class="form-control" + (" is-invalid" if form.fathers_name.errors else "")) }}
+            {% for error in form.fathers_name.errors %}
+            <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+          </div>
+          <div class="col-md-4">
+            {{ form.college_name.label(class="form-label") }}
+            {{ form.college_name(class="form-control" + (" is-invalid" if form.college_name.errors else ""),
+            placeholder="e.g. Government Polytechnic, Mumbai") }}
+            {% for error in form.college_name.errors %}
+            <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+          </div>
+          <div class="col-md-4">
+            {{ form.dob.label(class="form-label") }}
+            {{ form.dob(class="form-control" + (" is-invalid" if form.dob.errors else ""), type="date") }}
+            {% for error in form.dob.errors %}
+            <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+          </div>
+
+          <div class="col-md-4">
+            {{ form.gender.label(class="form-label") }}
+            {{ form.gender(class="form-select" + (" is-invalid" if form.gender.errors else "")) }}
+            {% for error in form.gender.errors %}
+            <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+          </div>
+          <div class="col-md-4">
+            {{ form.email.label(class="form-label") }}
+            {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else "")) }}
+            {% for error in form.email.errors %}
+            <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+          </div>
+          <div class="col-md-4">
+            {{ form.mobile.label(class="form-label") }}
+            {{ form.mobile(class="form-control" + (" is-invalid" if form.mobile.errors else "")) }}
+            {% for error in form.mobile.errors %}
+            <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+          </div>
+
+          <div class="col-md-6">
+            {{ form.address.label(class="form-label") }}
+            {{ form.address(class="form-control" + (" is-invalid" if form.address.errors else "")) }}
+            {% for error in form.address.errors %}
+            <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+          </div>
+          <div class="col-md-3">
+            {{ form.department.label(class="form-label") }}
+            {{ form.department(class="form-select" + (" is-invalid" if form.department.errors else "")) }}
+            {% for error in form.department.errors %}
+            <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+          </div>
+          <div class="col-md-3">
+            {{ form.semester.label(class="form-label") }}
+            {{ form.semester(class="form-control" + (" is-invalid" if form.semester.errors else "")) }}
+            {% for error in form.semester.errors %}
+            <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+          </div>
+
+          <div class="col-md-4">
+            {{ form.tenth_marks.label(class="form-label") }}
+            {{ form.tenth_marks(class="form-control" + (" is-invalid" if form.tenth_marks.errors else "")) }}
+            {% for error in form.tenth_marks.errors %}
+            <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+          </div>
+          <div class="col-md-4">
+            {{ form.twelfth_marks.label(class="form-label") }}
+            {{ form.twelfth_marks(class="form-control" + (" is-invalid" if form.twelfth_marks.errors else "")) }}
+            {% for error in form.twelfth_marks.errors %}
+            <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+          </div>
+          <div class="col-md-4">
+            {{ form.cgpa.label(class="form-label") }}
+            {{ form.cgpa(class="form-control" + (" is-invalid" if form.cgpa.errors else "")) }}
+            {% for error in form.cgpa.errors %}
+            <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+          </div>
+
+          <div class="col-md-12">
+            {{ form.skills.label(class="form-label") }}
+            {{ form.skills(class="form-control" + (" is-invalid" if form.skills.errors else ""), placeholder="Python, C,
+            Web Development, Communication, ...") }}
+            {% for error in form.skills.errors %}
+            <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+          </div>
+
+          <div class="col-md-12">
+            {{ form.projects_internship.label(class="form-label") }}
+            {{ form.projects_internship(class="form-control" + (" is-invalid" if form.projects_internship.errors else
+            ""), rows="3", placeholder="Project title, tech stack, brief description...") }}
+            {% for error in form.projects_internship.errors %}
+            <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+          </div>
+
+          <div class="col-md-6">
+            {{ form.password.label(class="form-label") }}
+            {{ form.password(class="form-control" + (" is-invalid" if form.password.errors else "")) }}
+            {% for error in form.password.errors %}
+            <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+          </div>
+          <div class="col-md-6">
+            {{ form.confirm_password.label(class="form-label") }}
+            {{ form.confirm_password(class="form-control" + (" is-invalid" if form.confirm_password.errors else "")) }}
+            {% for error in form.confirm_password.errors %}
+            <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+          </div>
+
+          <div class="col-12 d-flex justify-content-between align-items-center">
+            {{ form.submit(class="btn btn-success") }}
+            <a href="{{ url_for('auth.student_login') }}" class="text-warning">Already registered? Login</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

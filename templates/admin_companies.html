@@ -1,0 +1,132 @@
+{% extends "admin_layout.html" %}
+
+{% block admin_title %}Recruiting Companies{% endblock %}
+
+{% block admin_header_actions %}
+<div class="d-flex gap-2">
+    <div class="dropdown">
+        <button class="btn btn-info btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+            <i class="fa-solid fa-download me-1"></i> Reports
+        </button>
+        <ul class="dropdown-menu">
+            <li><a class="dropdown-item"
+                    href="{{ url_for('admin.download_report', report_type='companies', file_format='pdf') }}">Download
+                    PDF</a></li>
+            <li><a class="dropdown-item"
+                    href="{{ url_for('admin.download_report', report_type='companies', file_format='excel') }}">Download
+                    Excel</a></li>
+        </ul>
+    </div>
+    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-light btn-sm"><i
+            class="fa-solid fa-home me-1"></i> Dashboard</a>
+</div>
+{% endblock %}
+
+{% block admin_content %}
+<div class="row">
+    <!-- Add Company Form -->
+    <div class="col-lg-4 mb-4">
+        <div class="card bg-edu text-white border-0">
+            <div class="card-header border-secondary bg-transparent">
+                <h5 class="mb-0">Add Company</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {{ form.hidden_tag() }}
+                    <div class="mb-3">
+                        {{ form.name.label(class="form-label") }}
+                        {{ form.name(class="form-control" + (" is-invalid" if form.name.errors else "")) }}
+                        {% for error in form.name.errors %}
+                        <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.email.label(class="form-label") }}
+                        {{ form.email(class="form-control", placeholder="recruiter@company.com") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.industry.label(class="form-label") }}
+                        {{ form.industry(class="form-control") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.location.label(class="form-label") }}
+                        {{ form.location(class="form-control") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.website.label(class="form-label") }}
+                        {{ form.website(class="form-control") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.about.label(class="form-label") }}
+                        {{ form.about(class="form-control", rows=3) }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.required_skills.label(class="form-label") }}
+                        {{ form.required_skills(class="form-control", placeholder="e.g. Python, Java, SQL") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.average_salary.label(class="form-label") }}
+                        {{ form.average_salary(class="form-control", placeholder="e.g. 5.5") }}
+                    </div>
+                    <div class="d-grid">
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Company List -->
+    <div class="col-lg-8">
+        <div class="card bg-dark border-0 shadow">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover mb-0 align-middle">
+                        <thead class="text-secondary small text-uppercase">
+                            <tr>
+                                <th>Company</th>
+                                <th>Industry/Location</th>
+                                <th>Added On</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for company in companies %}
+                            <tr>
+                                <td>
+                                    <div class="fw-bold fs-5">{{ company.name }}</div>
+                                    {% if company.website %}
+                                    <a href="{{ company.website }}" target="_blank"
+                                        class="small text-info text-decoration-none"><i
+                                            class="fa-solid fa-globe me-1"></i>Website</a>
+                                    {% endif %}
+                                    {% if company.email %}
+                                    <div class="small text-white-50 mt-1"><i class="fa-solid fa-envelope me-1"></i>{{
+                                        company.email }}</div>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div><i class="fa-solid fa-briefcase me-2 text-warning"></i>{{ company.industry
+                                        or 'N/A' }}</div>
+                                    <div class="small text-white-50"><i class="fa-solid fa-location-dot me-2"></i>{{
+                                        company.location or 'N/A' }}</div>
+                                </td>
+                                <td>
+                                    <div class="small text-white-50 mb-1">{{ company.created_at.strftime('%Y-%m-%d')
+                                        }}</div>
+                                    <a href="{{ url_for('admin.invite_company', company_id=company.id) }}"
+                                        class="btn btn-sm btn-outline-light py-0">Invite</a>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="3" class="text-center py-4 text-white-50">No companies added yet.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

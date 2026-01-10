@@ -1,0 +1,108 @@
+{% extends "admin_layout.html" %}
+
+{% block admin_title %}{{ title }}{% endblock %}
+
+{% block admin_header_actions %}
+<div class="d-flex gap-2">
+    <a href="{{ url_for('admin.list_drives') }}" class="btn btn-outline-light btn-sm"><i
+            class="fa-solid fa-arrow-left me-1"></i> Back to Drives</a>
+</div>
+{% endblock %}
+
+{% block admin_content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card bg-edu text-light border-0 mb-4">
+            <div class="card-header border-0 d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">Drive Details</h4>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {{ form.hidden_tag() }}
+
+                    <h5 class="text-warning mb-3 border-bottom border-secondary pb-2">Job Details</h5>
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            {{ form.company_id.label(class="form-label") }}
+                            {{ form.company_id(class="form-select" + (" is-invalid" if form.company_id.errors else ""))
+                            }}
+                            {% for error in form.company_id.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                            <div class="form-text text-white-50">Select the recruiting company. <a
+                                    href="{{ url_for('admin.list_companies') }}" class="text-info">Add Company</a></div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.job_title.label(class="form-label") }}
+                        {{ form.job_title(class="form-control" + (" is-invalid" if form.job_title.errors else "")) }}
+                        {% for error in form.job_title.errors %}
+                        <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.job_description.label(class="form-label") }}
+                        {{ form.job_description(class="form-control", rows=4) }}
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            {{ form.salary.label(class="form-label") }}
+                            {{ form.salary(class="form-control") }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.allowed_branches.label(class="form-label") }}
+                            {{ form.allowed_branches(class="form-control", placeholder="e.g. IT, CS, Mech") }}
+                        </div>
+                    </div>
+
+                    <h5 class="text-warning mb-3 border-bottom border-secondary pb-2 mt-4">Eligibility Criteria</h5>
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            {{ form.criteria_cgpa.label(class="form-label") }}
+                            {{ form.criteria_cgpa(class="form-control") }}
+                        </div>
+                        <div class="col-md-4">
+                            {{ form.criteria_10th.label(class="form-label") }}
+                            {{ form.criteria_10th(class="form-control") }}
+                        </div>
+                        <div class="col-md-4">
+                            {{ form.criteria_12th.label(class="form-label") }}
+                            {{ form.criteria_12th(class="form-control") }}
+                        </div>
+                    </div>
+
+                    <h5 class="text-warning mb-3 border-bottom border-secondary pb-2 mt-4">Schedule</h5>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            {{ form.deadline.label(class="form-label") }}
+                            {{ form.deadline(class="form-control", type="date") }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.drive_date.label(class="form-label") }}
+                            {{ form.drive_date(class="form-control", type="date") }}
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            {{ form.venue.label(class="form-label") }}
+                            {{ form.venue(class="form-control", placeholder="e.g. Auditorium, Main Hall") }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.mode.label(class="form-label") }}
+                            {{ form.mode(class="form-select") }}
+                        </div>
+                    </div>
+
+                    <div class="d-grid mt-4">
+                        {{ form.submit(class="btn btn-success fw-bold p-2", value=submit_text) }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

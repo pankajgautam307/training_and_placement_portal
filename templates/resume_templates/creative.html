@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>{{ student.name }} - Resume</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 0;
+        }
+
+        body {
+            font-family: 'Helvetica', sans-serif;
+            color: #333;
+            margin: 0;
+            background: #fff;
+        }
+
+        /* Top Banner */
+        .banner {
+            background-color: #00b894;
+            /* Teal */
+            color: white;
+            padding-top: 40px;
+            padding-bottom: 40px;
+            padding-left: 40px;
+            padding-right: 40px;
+            height: 150px;
+            position: relative;
+        }
+
+        .banner-name {
+            font-size: 40px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin: 0;
+        }
+
+        .banner-subtitle {
+            font-size: 18px;
+            margin-top: 5px;
+            font-weight: 300;
+            opacity: 0.9;
+        }
+
+        .content-container {
+            padding: 40px;
+            margin-top: 0;
+        }
+
+        /* Two Column Layout inside Container */
+        table.layout {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        td.main {
+            width: 65%;
+            vertical-align: top;
+            padding-right: 30px;
+        }
+
+        td.side {
+            width: 35%;
+            vertical-align: top;
+            border-left: 2px solid #f1f2f6;
+            padding-left: 30px;
+        }
+
+        .section-head {
+            color: #00b894;
+            font-size: 14px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #00b894;
+            padding-bottom: 5px;
+            display: inline-block;
+        }
+
+        .entry {
+            margin-bottom: 25px;
+        }
+
+        .entry-title {
+            font-weight: bold;
+            font-size: 15px;
+            color: #2d3436;
+        }
+
+        .entry-misc {
+            font-size: 12px;
+            color: #636e72;
+            font-style: italic;
+            margin-bottom: 5px;
+        }
+
+        .entry-body {
+            font-size: 13px;
+            color: #2d3436;
+            line-height: 1.5;
+        }
+
+        .side-group {
+            margin-bottom: 30px;
+        }
+
+        .contact-row {
+            font-size: 13px;
+            margin-bottom: 8px;
+            color: #2d3436;
+        }
+
+        .skill-pill {
+            display: block;
+            background: #f1f2f6;
+            padding-top: 5px;
+            padding-bottom: 5px;
+            padding-left: 10px;
+            padding-right: 10px;
+            margin-bottom: 5px;
+            border-left: 4px solid #00b894;
+            font-size: 13px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="banner">
+        {% if student.profile_photo %}
+        <div style="position: absolute; top: 30px; right: 40px; text-align: right;">
+            <img src="{{ url_for('static', filename=student.profile_photo, _external=True) }}"
+                style="width: 100px; height: 100px; border-radius: 50%; border: 4px solid #ffffff; object-fit: cover;">
+        </div>
+        <div style="position: absolute; top: 140px; right: 40px; font-size: 12px; text-align: right; line-height: 1.4;">
+            {{ student.email }}<br>{{ student.mobile }}
+        </div>
+        {% else %}
+        <div style="position: absolute; top: 10px; right: 40px; font-size: 12px; text-align: right;">
+            {{ student.email }}<br>{{ student.mobile }}
+        </div>
+        {% endif %}
+
+        <div class="banner-name">{{ student.name }}</div>
+        <div class="banner-subtitle">B.Tech {{ student.department }}</div>
+    </div>
+
+    <div class="content-container">
+        <table class="layout">
+            <tr>
+                <td class="main">
+                    {% if r and r.aim %}
+                    <div class="entry">
+                        <div class="section-head">Career Objective</div>
+                        <div class="entry-body">{{ r.aim }}</div>
+                    </div>
+                    {% endif %}
+
+                    {% if student.projects_internship %}
+                    <div class="entry">
+                        <div class="section-head">Experience & Projects</div>
+                        <div class="entry-body" style="white-space: pre-wrap;">{{ student.projects_internship }}</div>
+                    </div>
+                    {% endif %}
+
+                    {% if r and (r.strengths or r.weaknesses) %}
+                    <div class="entry">
+                        <div class="section-head">Attributes</div>
+                        <div class="entry-body">
+                            {% if r.strengths %}<strong>Strengths:</strong> {{ r.strengths }}<br>{% endif %}
+                            {% if r.weaknesses %}<strong>Weaknesses:</strong> {{ r.weaknesses }}{% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </td>
+
+                <td class="side">
+                    <div class="side-group">
+                        <div class="section-head">Education</div>
+
+                        <div style="margin-bottom: 15px;">
+                            <div class="entry-title">B.Tech ({{ student.department }})</div>
+                            <div class="entry-misc">Semester {{ student.semester }}</div>
+                            <div class="entry-body">Diploma CGPA: <strong>{{ student.cgpa }}</strong></div>
+                        </div>
+
+                        <div style="margin-bottom: 15px;">
+                            <div class="entry-title">Class XII</div>
+                            {% if r and r.school_12_name %}<div class="entry-misc">{{ r.school_12_name }}</div>{% endif
+                            %}
+                            <div class="entry-body">{{ student.twelfth_marks }}%</div>
+                        </div>
+
+                        <div style="margin-bottom: 15px;">
+                            <div class="entry-title">Class X</div>
+                            {% if r and r.school_10_name %}<div class="entry-misc">{{ r.school_10_name }}</div>{% endif
+                            %}
+                            <div class="entry-body">{{ student.tenth_marks }}%</div>
+                        </div>
+                    </div>
+
+                    <div class="side-group">
+                        <div class="section-head">Skills</div>
+                        {% for skill in student.skills.split(',') %}
+                        <div class="skill-pill">{{ skill.strip() }}</div>
+                        {% endfor %}
+                    </div>
+
+                    {% if r and r.hobbies %}
+                    <div class="side-group">
+                        <div class="section-head">Hobbies</div>
+                        <div class="entry-body">{{ r.hobbies }}</div>
+                    </div>
+                    {% endif %}
+                </td>
+            </tr>
+        </table>
+    </div>
+</body>
+
+</html>

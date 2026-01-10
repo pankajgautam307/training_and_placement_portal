@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        @page {
+            size: A4;
+            margin: 2.5cm;
+        }
+
+        body {
+            font-family: 'Times New Roman', serif;
+            line-height: 1.4;
+        }
+
+        hr {
+            border-top: 1px solid black;
+            margin: 5px 0 10px 0;
+        }
+
+        h1 {
+            text-align: center;
+            text-transform: uppercase;
+            font-size: 18pt;
+            margin-bottom: 0;
+        }
+
+        .center {
+            text-align: center;
+            font-size: 10pt;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            font-size: 12pt;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+            margin-top: 15px;
+        }
+
+        .row {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .bold {
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>{{ student.name }}</h1>
+    <div class="center">
+        {{ student.address }} <br>
+        {{ student.mobile }} | {{ student.email }}
+    </div>
+
+    <h2>Education</h2>
+    <hr>
+    <p>
+        <span class="bold">Diploma in {{ student.department }}</span><br>
+        Current Semester: {{ student.semester }} | Diploma CGPA: {{ student.cgpa }}
+    </p>
+    <p>
+        <span class="bold">12th Grade</span><br>
+        Percentage: {{ student.twelfth_marks }}%
+    </p>
+    <p>
+        <span class="bold">10th Grade</span><br>
+        Percentage: {{ student.tenth_marks }}%
+    </p>
+
+    <h2>Technical Skills</h2>
+    <hr>
+    <p>{{ student.skills }}</p>
+
+    <h2>Projects & Experience</h2>
+    <hr>
+    <p style="white-space: pre-wrap;">{{ student.projects_internship }}</p>
+</body>
+
+</html>

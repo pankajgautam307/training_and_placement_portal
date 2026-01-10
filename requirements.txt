@@ -1,0 +1,11 @@
+flask
+flask_sqlalchemy
+flask_login
+flask_bcrypt
+flask_mail
+flask_wtf
+email_validator
+pandas
+openpyxl
+python-dotenv
+xhtml2pdf

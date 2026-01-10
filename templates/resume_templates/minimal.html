@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>{{ student.name }} - Resume</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 1cm;
+        }
+
+        body {
+            font-family: 'Times New Roman', serif;
+            color: #000;
+            line-height: 1.4;
+        }
+
+        .header {
+            text-align: center;
+            border-bottom: 1px solid #000;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .name {
+            font-size: 24px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        .contact {
+            margin-top: 5px;
+            font-size: 14px;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: bold;
+            text-transform: uppercase;
+            border-bottom: 1px solid #ccc;
+            margin: 20px 0 10px 0;
+            padding-bottom: 3px;
+        }
+
+        .item {
+            margin-bottom: 10px;
+        }
+
+        .item-head {
+            font-weight: bold;
+            font-size: 14px;
+            display: table;
+            width: 100%;
+        }
+
+        .left {
+            display: table-cell;
+            text-align: left;
+        }
+
+        .right {
+            display: table-cell;
+            text-align: right;
+        }
+
+        .item-sub {
+            font-style: italic;
+            font-size: 13px;
+        }
+
+        .item-body {
+            font-size: 13px;
+            margin-top: 2px;
+        }
+
+        ul {
+            margin: 5px 0 0 15px;
+            padding: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h1 class="name">{{ student.name }}</h1>
+        <div class="contact">
+            {{ student.email }} | {{ student.mobile }} | {{ student.address }}
+        </div>
+    </div>
+
+    {% if r and r.aim %}
+    <div class="section-title">Career Objective</div>
+    <div class="item-body">{{ r.aim }}</div>
+    {% endif %}
+
+    <div class="section-title">Education</div>
+    <div class="item">
+        <div class="item-head">
+            <div class="left">B.Tech in {{ student.department }}</div>
+            <div class="right">Semester {{ student.semester }}</div>
+        </div>
+        <div class="item-body">
+            Diploma CGPA: <strong>{{ student.cgpa }}</strong>
+        </div>
+    </div>
+    <div class="item">
+        <div class="item-head">
+            <div class="left">Class XII</div>
+            <div class="right">{{ student.twelfth_marks }}%</div>
+        </div>
+        {% if r and (r.school_12_name or r.school_12_year) %}
+        <div class="item-sub">{{ r.school_12_name }} {% if r.school_12_year %}({{ r.school_12_year }}){% endif %}</div>
+        {% endif %}
+    </div>
+    <div class="item">
+        <div class="item-head">
+            <div class="left">Class X</div>
+            <div class="right">{{ student.tenth_marks }}%</div>
+        </div>
+        {% if r and (r.school_10_name or r.school_10_year) %}
+        <div class="item-sub">{{ r.school_10_name }} {% if r.school_10_year %}({{ r.school_10_year }}){% endif %}</div>
+        {% endif %}
+    </div>
+
+    <div class="section-title">Technical Skills</div>
+    <div class="item-body">
+        {{ student.skills }}
+    </div>
+
+    {% if r and (r.strengths or r.weaknesses) %}
+    <div class="section-title">Strengths & Weaknesses</div>
+    <div class="item-body">
+        {% if r.strengths %}<strong>Strengths:</strong> {{ r.strengths }}<br>{% endif %}
+        {% if r.weaknesses %}<strong>Weaknesses:</strong> {{ r.weaknesses }}{% endif %}
+    </div>
+    {% endif %}
+
+    {% if r and r.hobbies %}
+    <div class="section-title">Hobbies</div>
+    <div class="item-body">{{ r.hobbies }}</div>
+    {% endif %}
+
+    <div class="section-title">Projects & Internships</div>
+    <div class="item-body" style="white-space: pre-wrap;">{{ student.projects_internship }}</div>
+
+</body>
+
+</html>

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        @page {
+            size: landscape;
+            margin: 1cm;
+        }
+
+        body {
+            font-family: sans-serif;
+            font-size: 10px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 6px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+
+        .footer {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            text-align: right;
+            font-size: 8px;
+            color: #666;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Company Invitations Report</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Company</th>
+                <th>Subject</th>
+                <th>Status</th>
+                <th>Sent At</th>
+                <th>Responded At</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for i in invitations %}
+            <tr>
+                <td>{{ i.company.name }}</td>
+                <td>{{ i.subject }}</td>
+                <td>{{ i.status }}</td>
+                <td>{{ i.sent_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                <td>{{ i.responded_at.strftime('%Y-%m-%d %H:%M') if i.responded_at else 'N/A' }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <div class="footer">
+        Downloaded on: {{ download_time }}
+    </div>
+</body>
+
+</html>

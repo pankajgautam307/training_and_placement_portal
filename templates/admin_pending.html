@@ -1,0 +1,57 @@
+{% extends "admin_layout.html" %}
+
+{% block admin_title %}Pending Student Approvals{% endblock %}
+
+{% block admin_header_actions %}
+<div class="d-flex gap-2">
+  <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-light btn-sm"><i class="fa-solid fa-home me-1"></i>
+    Dashboard</a>
+</div>
+{% endblock %}
+
+{% block admin_content %}
+<div class="card bg-edu border-0 text-light">
+  <div class="card-body table-responsive">
+    <table class="table table-sm table-dark table-striped align-middle mb-0">
+      <thead>
+        <tr>
+          <th>Roll No</th>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Dept</th>
+          <th>Sem</th>
+          <th>Diploma CGPA</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in students %}
+        <tr>
+          <td>{{ s.roll_no }}</td>
+          <td>{{ s.name }}</td>
+          <td>{{ s.email }}</td>
+          <td>{{ s.department }}</td>
+          <td>{{ s.semester }}</td>
+          <td>{{ s.cgpa or '-' }}</td>
+          <td>
+            <form method="post" action="{{ url_for('admin.update_status', student_id=s.id) }}" class="d-flex gap-1">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+              <button name="status" value="Approved" class="btn btn-success btn-sm">
+                <i class="fa-solid fa-check"></i>
+              </button>
+              <button name="status" value="Rejected" class="btn btn-danger btn-sm">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="7" class="text-center">No pending students.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

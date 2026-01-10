@@ -1,0 +1,145 @@
+{% extends "admin_layout.html" %}
+
+{% block admin_title %}Detailed Applications{% endblock %}
+
+{% block admin_header_actions %}
+<div class="d-flex gap-2">
+    <div class="dropdown">
+        <button class="btn btn-info btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+            <i class="fa-solid fa-download me-1"></i> Reports
+        </button>
+        <ul class="dropdown-menu">
+            <li><a class="dropdown-item"
+                    href="{{ url_for('admin.download_applicants_report', drive_id=drive.id, file_format='pdf') }}">Download
+                    PDF</a></li>
+            <li><a class="dropdown-item"
+                    href="{{ url_for('admin.download_applicants_report', drive_id=drive.id, file_format='excel') }}">Download
+                    Excel</a></li>
+        </ul>
+    </div>
+    <a href="{{ url_for('admin.list_drives') }}" class="btn btn-outline-light btn-sm"><i
+            class="fa-solid fa-arrow-left me-1"></i> Back to Drives</a>
+</div>
+{% endblock %}
+
+{% block admin_content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h5 class="mb-1">Applicants for <span class="text-warning fw-bold">{{ drive.job_title }}</span></h5>
+        <p class="text-white-50 mb-0 small">Company: {{ drive.company.name }}</p>
+    </div>
+</div>
+
+<div class="card bg-dark border-0 shadow">
+    <div class="card-header bg-secondary bg-opacity-25 border-0">
+        <div class="d-flex justify-content-between">
+            <span class="fw-bold">Total Applicants: {{ applications|length }}</span>
+            <span>Sorted by Highest Diploma CGPA</span>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-dark table-hover mb-0 align-middle">
+                <thead class="text-secondary small text-uppercase">
+                    <tr>
+                        <th>Roll No</th>
+                        <th>Student Name</th>
+                        <th>Diploma CGPA (10th / 12th)</th>
+                        <th>Dept / Sem</th>
+                        <th>Resume / Skills</th>
+                        {% if quizzes and results_map %}
+                        <th>Assessment</th>
+                        {% endif %}
+                        <th>Applied At</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for app in applications %}
+                    <tr>
+                        <td><span class="badge bg-secondary">{{ app.student.roll_no }}</span></td>
+                        <td class="fw-bold">{{ app.student.name }}</td>
+                        <td>
+                            <div class="fw-bold text-success">{{ app.student.cgpa }}</div>
+                            <div class="small text-white-50">{{ app.student.tenth_marks }} / {{
+                                app.student.twelfth_marks }}</div>
+                        </td>
+                        <td class="small">{{ app.student.department }} ({{ app.student.semester }})</td>
+                        <td class="small text-white-50">{{ app.student.skills }}</td>
+
+                        {% if quizzes and results_map %}
+                        <td>
+                            {% for quiz in quizzes %}
+                            {% set attempt = results_map.get((app.student.id, quiz.id)) %}
+                            <div class="mb-1">
+                                <div class="small text-info fw-bold">{{ quiz.title }}</div>
+                                {% if attempt %}
+                                {% if attempt.passed %}
+                                <span class="badge bg-success">Passed ({{ attempt.score }}/{{ attempt.total_marks
+                                    }})</span>
+                                {% else %}
+                                <span class="badge bg-danger">Failed ({{ attempt.score }}/{{ attempt.total_marks
+                                    }})</span>
+                                {% endif %}
+                                <div class="small text-white-50 ms-1 d-inline">{{ (attempt.score /
+                                    attempt.total_marks * 100)|round(0)|int }}%</div>
+                                {% else %}
+                                <span class="badge bg-secondary text-dark">Not Attempted</span>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </td>
+                        {% endif %}
+
+                        <td class="small text-white-50">{{ app.applied_at.strftime('%Y-%m-%d') }}</td>
+                        <td>
+                            {% if app.status == 'Applied' %}
+                            <span class="badge bg-info text-dark">Applied</span>
+                            {% elif app.status == 'Shortlisted' %}
+                            <span class="badge bg-warning text-dark">Shortlisted</span>
+                            {% elif app.status == 'Selected' %}
+                            <span class="badge bg-success">Selected</span>
+                            {% elif app.status == 'Rejected' %}
+                            <span class="badge bg-danger">Rejected</span>
+                            {% else %}
+                            <span class="badge bg-secondary">{{ app.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <form
+                                    action="{{ url_for('admin.update_application_status', app_id=app.id, status='Shortlisted') }}"
+                                    method="post">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                                    <button class="btn btn-outline-warning" title="Shortlist"><i
+                                            class="fa-solid fa-star"></i></button>
+                                </form>
+                                <form
+                                    action="{{ url_for('admin.update_application_status', app_id=app.id, status='Selected') }}"
+                                    method="post">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                                    <button class="btn btn-outline-success" title="Mark Selected"><i
+                                            class="fa-solid fa-check-double"></i></button>
+                                </form>
+                                <form
+                                    action="{{ url_for('admin.update_application_status', app_id=app.id, status='Rejected') }}"
+                                    method="post">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                                    <button class="btn btn-outline-danger" title="Reject"><i
+                                            class="fa-solid fa-ban"></i></button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="8" class="text-center py-4 text-white-50">No applicants yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

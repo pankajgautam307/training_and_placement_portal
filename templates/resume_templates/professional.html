@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>{{ student.name }} - Resume</title>
+    <style>
+        @page {
+            size: A4;
+            margin-top: 1cm;
+            margin-bottom: 1cm;
+            margin-left: 2cm;
+            margin-right: 2cm;
+        }
+
+        body {
+            font-family: 'Times New Roman', serif;
+            font-size: 14px;
+            /* converted from 11pt approx */
+            line-height: 1.35;
+            color: #111;
+        }
+
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #003366;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+
+        .name {
+            font-size: 24pt;
+            color: #003366;
+            /* Navy Blue */
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .contact {
+            font-size: 10pt;
+            color: #444;
+        }
+
+        /* Section styling */
+        h3.section-head {
+            font-family: 'Arial', sans-serif;
+            /* Clean header font */
+            font-size: 12pt;
+            color: #003366;
+            text-transform: uppercase;
+            border-bottom: 1px solid #aaa;
+            margin-top: 20px;
+            margin-bottom: 12px;
+            padding-bottom: 3px;
+        }
+
+        /* Tables */
+        table.w100 {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 8px;
+            table-layout: fixed;
+        }
+
+        td {
+            vertical-align: top;
+            word-wrap: break-word;
+        }
+
+        .row-title {
+            font-weight: bold;
+            font-size: 11pt;
+            color: #000;
+        }
+
+        .row-sub {
+            font-style: italic;
+            color: #333;
+        }
+
+        .row-right {
+            text-align: right;
+            white-space: nowrap;
+            color: #000;
+        }
+
+        .content-block {
+            margin-bottom: 15px;
+            text-align: justify;
+        }
+
+        /* Skills & Lists */
+        ul.tight {
+            margin-top: 2px;
+            margin-bottom: 10px;
+            margin-left: 20px;
+            margin-right: 0;
+            padding: 0;
+        }
+
+        li {
+            margin-bottom: 3px;
+        }
+
+        .label {
+            font-weight: bold;
+            color: #333;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header">
+        {% if student.profile_photo %}
+        <div style="position: absolute; top: -10px; right: 0;">
+            <img src="{{ url_for('static', filename=student.profile_photo, _external=True) }}"
+                style="width: 80px; height: 80px; object-fit: cover; border: 1px solid #ccc;">
+        </div>
+        {% endif %}
+
+        <div class="name">{{ student.name }}</div>
+        <div class="contact">
+            {{ student.address }} <br>
+            {{ student.email }} • {{ student.mobile }}
+        </div>
+    </div>
+
+    {% if r and r.aim %}
+    <h3 class="section-head">Professional Objective</h3>
+    <div class="content-block">{{ r.aim }}</div>
+    {% endif %}
+
+    <h3 class="section-head">Education</h3>
+
+    <table class="w100">
+        <tr>
+            <td class="row-title">Bachelor of Technology, {{ student.department }}</td>
+            <td class="row-right">Semester {{ student.semester }}</td>
+        </tr>
+        <tr>
+            <td class="row-sub">Diploma CGPA: <strong>{{ student.cgpa }} / 10.0</strong></td>
+            <td class="row-right">Present</td>
+        </tr>
+    </table>
+
+    {% if r and r.school_12_name %}
+    <table class="w100">
+        <tr>
+            <td class="row-title" style="font-size: 11pt;">Class XII (Highest Secondary)</td>
+            <td class="row-right">{% if r.school_12_year %}{{ r.school_12_year }}{% endif %}</td>
+        </tr>
+        <tr>
+            <td class="row-sub">{{ r.school_12_name }}</td>
+            <td class="row-right">{{ student.twelfth_marks }}%</td>
+        </tr>
+    </table>
+    {% else %}
+    <!-- Fallback if school name not present -->
+    <table class="w100">
+        <tr>
+            <td class="row-title">Class XII</td>
+            <td class="row-right">{{ student.twelfth_marks }}%</td>
+        </tr>
+    </table>
+    {% endif %}
+
+    {% if r and r.school_10_name %}
+    <table class="w100">
+        <tr>
+            <td class="row-title" style="font-size: 11pt;">Class X (High School)</td>
+            <td class="row-right">{% if r.school_10_year %}{{ r.school_10_year }}{% endif %}</td>
+        </tr>
+        <tr>
+            <td class="row-sub">{{ r.school_10_name }}</td>
+            <td class="row-right">{{ student.tenth_marks }}%</td>
+        </tr>
+    </table>
+    {% else %}
+    <table class="w100">
+        <tr>
+            <td class="row-title">Class X</td>
+            <td class="row-right">{{ student.tenth_marks }}%</td>
+        </tr>
+    </table>
+    {% endif %}
+
+    {% if student.projects_internship %}
+    <h3 class="section-head">Experience & Projects</h3>
+    <div class="content-block" style="white-space: pre-wrap; word-wrap: break-word;">{{ student.projects_internship }}
+    </div>
+    {% endif %}
+
+    <h3 class="section-head">Technical Skills</h3>
+    <div class="content-block" style="word-wrap: break-word;">
+        <span class="label">Competencies:</span> {{ student.skills }}
+    </div>
+
+    {% if r and (r.hobbies or r.strengths or r.weaknesses) %}
+    <h3 class="section-head">Additional Information</h3>
+    <ul class="tight">
+        {% if r.strengths %}<li><span class="label">Key Strengths:</span> {{ r.strengths }}</li>{% endif %}
+        {% if r.weaknesses %}<li><span class="label">Areas of Focus:</span> {{ r.weaknesses }}</li>{% endif %}
+        {% if r.hobbies %}<li><span class="label">Interests:</span> {{ r.hobbies }}</li>{% endif %}
+    </ul>
+    {% endif %}
+
+</body>
+
+</html>

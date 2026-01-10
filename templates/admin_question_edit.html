@@ -1,0 +1,65 @@
+{% extends "admin_layout.html" %}
+
+{% block admin_title %}Edit Question{% endblock %}
+
+{% block admin_header_actions %}
+<div class="d-flex gap-2">
+    <a href="{{ url_for('admin.view_quiz', quiz_id=question.quiz_id) }}" class="btn btn-outline-light btn-sm"><i
+            class="fa-solid fa-arrow-left me-1"></i> Back to Quiz</a>
+</div>
+{% endblock %}
+
+{% block admin_content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card bg-edu text-white border-0 shadow">
+            <div class="card-header border-secondary">
+                <h5 class="mb-0">Edit Question Details</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {{ form.hidden_tag() }}
+                    <div class="mb-3">
+                        {{ form.question_text.label(class="form-label") }}
+                        {{ form.question_text(class="form-control", rows=3) }}
+                        {% for error in form.question_text.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-6">
+                            {{ form.option_a.label(class="form-label") }}
+                            {{ form.option_a(class="form-control") }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.option_b.label(class="form-label") }}
+                            {{ form.option_b(class="form-control") }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.option_c.label(class="form-label") }}
+                            {{ form.option_c(class="form-control") }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.option_d.label(class="form-label") }}
+                            {{ form.option_d(class="form-control") }}
+                        </div>
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-6">
+                            {{ form.correct_option.label(class="form-label") }}
+                            {{ form.correct_option(class="form-select") }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.marks.label(class="form-label") }}
+                            {{ form.marks(class="form-control") }}
+                        </div>
+                    </div>
+                    <div class="d-grid mt-4">
+                        {{ form.submit(class="btn btn-warning", value="Update Question") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
