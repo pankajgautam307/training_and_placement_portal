@@ -1,9 +1,9 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app
 from flask_login import login_user, logout_user, login_required, current_user
-from extensions import db, mail
+from extensions import db
 from models import Student, AdminUser
 from forms import StudentRegistrationForm, StudentLoginForm, AdminLoginForm, ChangePasswordForm, PasswordResetRequestForm, PasswordResetForm
-from flask_mail import Message
+from utils.email_sender import send_email
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired
 
 auth_bp = Blueprint('auth', __name__)
@@ -14,15 +14,12 @@ def send_verification_email(student):
     
     link = url_for('auth.verify_email', token=token, _external=True)
     
-    msg = Message(
-        subject="Verify your Email - TPO Portal",
-        recipients=[student.email],
-        body=f"Dear {student.name},\n\nPlease verify your email by clicking the link below:\n{link}\n\nThis link expires in 1 hour."
-    )
-    try:
-        mail.send(msg)
-    except Exception as e:
-        print(f"Error sending email: {e}")
+    link = url_for('auth.verify_email', token=token, _external=True)
+    
+    subject = "Verify your Email - TPO Portal"
+    body = f"Dear {student.name},\n\nPlease verify your email by clicking the link below:\n{link}\n\nThis link expires in 1 hour."
+    
+    send_email(subject, [student.email], body)
 
 def send_password_reset_email(user, user_type):
     """Send password reset email to student or admin"""
@@ -33,29 +30,23 @@ def send_password_reset_email(user, user_type):
     
     user_name = user.name if hasattr(user, 'name') and user.name else user.username if hasattr(user, 'username') else 'User'
     
-    msg = Message(
-        subject="Password Reset Request - TPO Portal",
-        recipients=[user.email],
-        body=f"Dear {user_name},\n\nYou requested to reset your password. Click the link below to reset:\n{link}\n\nThis link expires in 1 hour.\n\nIf you did not request this, please ignore this email."
-    )
-    try:
-        mail.send(msg)
-    except Exception as e:
-        print(f"Error sending password reset email: {e}")
+    user_name = user.name if hasattr(user, 'name') and user.name else user.username if hasattr(user, 'username') else 'User'
+    
+    subject = "Password Reset Request - TPO Portal"
+    body = f"Dear {user_name},\n\nYou requested to reset your password. Click the link below to reset:\n{link}\n\nThis link expires in 1 hour.\n\nIf you did not request this, please ignore this email."
+    
+    send_email(subject, [user.email], body)
 
 def send_password_reset_confirmation(user):
     """Send confirmation email after password reset"""
     user_name = user.name if hasattr(user, 'name') and user.name else user.username if hasattr(user, 'username') else 'User'
     
-    msg = Message(
-        subject="Password Reset Successful - TPO Portal",
-        recipients=[user.email],
-        body=f"Dear {user_name},\n\nYour password has been successfully reset.\n\nIf you did not make this change, please contact the administrator immediately."
-    )
-    try:
-        mail.send(msg)
-    except Exception as e:
-        print(f"Error sending confirmation email: {e}")
+    user_name = user.name if hasattr(user, 'name') and user.name else user.username if hasattr(user, 'username') else 'User'
+    
+    subject = "Password Reset Successful - TPO Portal"
+    body = f"Dear {user_name},\n\nYour password has been successfully reset.\n\nIf you did not make this change, please contact the administrator immediately."
+    
+    send_email(subject, [user.email], body)
 
 
 @auth_bp.route('/')
