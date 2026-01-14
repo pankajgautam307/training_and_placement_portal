@@ -19,7 +19,12 @@ def send_verification_email(student):
     subject = "Verify your Email - TPO Portal"
     body = f"Dear {student.name},\n\nPlease verify your email by clicking the link below:\n{link}\n\nThis link expires in 1 hour."
     
-    send_email(subject, [student.email], body)
+    if not send_email(subject, [student.email], body):
+        flash('Verification email could not be sent. Please check your email configuration or contact support.', 'warning')
+    else:
+        # We don't need double-flash if registration route also flashes success, 
+        # but let's leave success message to the route handler. 
+        pass
 
 def send_password_reset_email(user, user_type):
     """Send password reset email to student or admin"""
@@ -28,25 +33,19 @@ def send_password_reset_email(user, user_type):
     
     link = url_for('auth.reset_password', token=token, _external=True)
     
-    user_name = user.name if hasattr(user, 'name') and user.name else user.username if hasattr(user, 'username') else 'User'
-    
-    user_name = user.name if hasattr(user, 'name') and user.name else user.username if hasattr(user, 'username') else 'User'
-    
     subject = "Password Reset Request - TPO Portal"
     body = f"Dear {user_name},\n\nYou requested to reset your password. Click the link below to reset:\n{link}\n\nThis link expires in 1 hour.\n\nIf you did not request this, please ignore this email."
     
-    send_email(subject, [user.email], body)
+    if not send_email(subject, [user.email], body):
+         print(f"Failed to send password reset email to {user.email}")
 
 def send_password_reset_confirmation(user):
     """Send confirmation email after password reset"""
-    user_name = user.name if hasattr(user, 'name') and user.name else user.username if hasattr(user, 'username') else 'User'
-    
-    user_name = user.name if hasattr(user, 'name') and user.name else user.username if hasattr(user, 'username') else 'User'
-    
     subject = "Password Reset Successful - TPO Portal"
     body = f"Dear {user_name},\n\nYour password has been successfully reset.\n\nIf you did not make this change, please contact the administrator immediately."
     
-    send_email(subject, [user.email], body)
+    if not send_email(subject, [user.email], body):
+        print(f"Failed to send password reset confirmation to {user.email}")
 
 
 @auth_bp.route('/')
