@@ -262,19 +262,54 @@ def bulk_import():
                                                         student.tenth_marks) or 0)
                     student.twelfth_marks = float(row.get('twelfth_marks',
                                                           student.twelfth_marks) or 0)
-                    cgpa_val = float(row.get('cgpa', row.get('aggregate_cpi', student.cgpa)) or 0)
-                    backlogs_val = int(row.get('backlogs', 0)) # Default to 0 or existing? Maybe 0 if not present in sheet?
-                    # If sheet has backlogs column, use it, else keep existing? 
-                    # row.get returns None if not found? No, '0' default.
-                    # But if user doesn't update backlogs, it resets to 0?
-                    # Safer: check if column exists. 
-                    if 'backlogs' in row:
-                        backlogs_val = int(row['backlogs'])
-                        student.backlogs = backlogs_val
-                        if backlogs_val > 0:
-                            cgpa_val = 0.0
                     
-                    student.cgpa = cgpa_val
+                    # Mutual Exclusivity Logic for Updates
+                    raw_cgpa = row.get('cgpa')
+                    raw_backlogs = row.get('backlogs')
+                    
+                    has_new_cgpa = raw_cgpa is not None and str(raw_cgpa).strip() != '' and float(raw_cgpa) > 0
+                    
+                    if has_new_cgpa:
+                        student.cgpa = float(raw_cgpa)
+                        student.backlogs = 0
+                        # Clear existing backlogs from DB? Yes for consistency
+                        from models import Backlog
+                        Backlog.query.filter_by(student_id=student.id).delete()
+                    else:
+                        # If no new CGPA provided, check if backlogs provided
+                        if raw_backlogs:
+                             student.cgpa = None
+                             backlog_count = 0
+                             s_backlogs = str(raw_backlogs).strip()
+                             
+                             # Try JSON
+                             import json
+                             from models import Backlog
+                             
+                             if s_backlogs.startswith('[') and s_backlogs.endswith(']'):
+                                 try:
+                                     details = json.loads(s_backlogs)
+                                     if isinstance(details, list):
+                                         # Replace existing backlogs
+                                         Backlog.query.filter_by(student_id=student.id).delete()
+                                         
+                                         for entry in details:
+                                             if 'subject' in entry and 'semester' in entry:
+                                                 b = Backlog(
+                                                     student_id=student.id,
+                                                     subject_name=entry['subject'],
+                                                     semester=int(entry['semester'])
+                                                 )
+                                                 db.session.add(b)
+                                                 backlog_count += 1
+                                 except:
+                                     pass
+                             
+                             if backlog_count == 0 and s_backlogs.isdigit():
+                                 backlog_count = int(s_backlogs)
+                                 
+                             student.backlogs = backlog_count
+
                     student.skills = row.get('skills', student.skills)
                     student.projects_internship = row.get(
                         'projects', student.projects_internship)
