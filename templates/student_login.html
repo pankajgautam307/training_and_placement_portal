@@ -28,6 +28,11 @@
           <div class="d-grid mb-3">
             {{ form.submit(class="btn btn-primary btn-lg fw-bold") }}
           </div>
+          <div class="text-center mb-2">
+            <a href="{{ url_for('auth.student_forgot_password') }}" class="text-warning text-decoration-none">
+              <i class="fa-solid fa-key me-1"></i>Forgot Password?
+            </a>
+          </div>
           <div class="text-center">
             <a href="{{ url_for('auth.student_register') }}" class="text-info text-decoration-none">
               New Student? Register here

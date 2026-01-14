@@ -12,3 +12,5 @@ xhtml2pdf
 gunicorn
 psycopg2-binary
 Flask-Migrate
+requests>=2.31.0
+python-decouple>=3.8

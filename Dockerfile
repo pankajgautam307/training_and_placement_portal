@@ -14,6 +14,8 @@ RUN python -m venv .venv \
     && pip install -r requirements.txt
 
 ENV PATH="/app/.venv/bin:$PATH"
+ENV PYTHONUNBUFFERED=1
+
 
 # Railway will inject PORT
 ENV PORT=8000

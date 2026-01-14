@@ -109,13 +109,43 @@
             <div class="invalid-feedback">{{ error }}</div>
             {% endfor %}
           </div>
+
           <div class="col-md-4">
+            <label class="form-label">{{ form.metric_type.label.text }}</label>
+            <div>
+              {% for subfield in form.metric_type %}
+              <div class="form-check form-check-inline">
+                {{ subfield(class="form-check-input", onchange="toggleMetric()") }}
+                {{ subfield.label(class="form-check-label") }}
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+
+          <div class="col-md-4" id="cgpa-field">
             {{ form.cgpa.label(class="form-label") }}
             {{ form.cgpa(class="form-control" + (" is-invalid" if form.cgpa.errors else "")) }}
             {% for error in form.cgpa.errors %}
             <div class="invalid-feedback">{{ error }}</div>
             {% endfor %}
           </div>
+
+          <div class="col-md-12" id="backlogs-field" style="display: none;">
+            <label class="form-label">Backlog Details</label>
+            <div id="backlog-entries">
+              <!-- Dynamic backlog entries will be added here -->
+            </div>
+            <button type="button" class="btn btn-sm btn-outline-info mt-2" onclick="addBacklogEntry()">
+              <i class="fa-solid fa-plus me-1"></i>Add Backlog
+            </button>
+            {{ form.backlog_details(style="display:none;") }}
+            {% for error in form.backlog_details.errors %}
+            <div class="text-danger small mt-1">{{ error }}</div>
+            {% endfor %}
+          </div>
+
+          <!-- Hidden field to store backlog count -->
+          {{ form.backlogs(style="display:none;") }}
 
           <div class="col-md-12">
             {{ form.skills.label(class="form-label") }}
@@ -158,5 +188,103 @@
       </div>
     </div>
   </div>
-</div>
-{% endblock %}
+  {% endblock %}
+
+
+
+  {% block scripts %}
+  <script>
+    let backlogCount = 0;
+
+    function toggleMetric() {
+      const metric = document.querySelector('input[name="metric_type"]:checked').value;
+      const cgpaField = document.getElementById('cgpa-field');
+      const backlogsField = document.getElementById('backlogs-field');
+
+      if (metric === 'cgpa') {
+        cgpaField.style.display = 'block';
+        backlogsField.style.display = 'none';
+        document.getElementById('backlog-entries').innerHTML = '';
+        document.getElementById('backlog_details').value = '';
+        backlogCount = 0;
+      } else {
+        cgpaField.style.display = 'none';
+        backlogsField.style.display = 'block';
+        if (backlogCount === 0) {
+          addBacklogEntry();
+        }
+      }
+    }
+
+    function addBacklogEntry() {
+      backlogCount++;
+      const container = document.getElementById('backlog-entries');
+      const entryDiv = document.createElement('div');
+      entryDiv.className = 'row g-2 mb-2 backlog-entry';
+      entryDiv.id = `backlog-${backlogCount}`;
+
+      entryDiv.innerHTML = `
+        <div class="col-md-6">
+          <input type="text" class="form-control backlog-subject" placeholder="Subject Name" required>
+        </div>
+        <div class="col-md-4">
+          <select class="form-select backlog-semester" required>
+            <option value="">Select Semester</option>
+            <option value="1">Semester 1</option>
+            <option value="2">Semester 2</option>
+            <option value="3">Semester 3</option>
+            <option value="4">Semester 4</option>
+            <option value="5">Semester 5</option>
+            <option value="6">Semester 6</option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <button type="button" class="btn btn-sm btn-danger" onclick="removeBacklogEntry(${backlogCount})">
+            <i class="fa-solid fa-trash"></i>
+          </button>
+        </div>
+      `;
+
+      container.appendChild(entryDiv);
+      updateBacklogDetails();
+    }
+
+    function removeBacklogEntry(id) {
+      const entry = document.getElementById(`backlog-${id}`);
+      if (entry) {
+        entry.remove();
+        updateBacklogDetails();
+      }
+    }
+
+    function updateBacklogDetails() {
+      const entries = document.querySelectorAll('.backlog-entry');
+      const backlogData = [];
+
+      entries.forEach(entry => {
+        const subject = entry.querySelector('.backlog-subject').value.trim();
+        const semester = entry.querySelector('.backlog-semester').value;
+
+        if (subject && semester) {
+          backlogData.push({
+            subject: subject,
+            semester: parseInt(semester)
+          });
+        }
+      });
+
+      document.getElementById('backlog_details').value = JSON.stringify(backlogData);
+      document.getElementById('backlogs').value = backlogData.length;
+    }
+
+    document.addEventListener('input', function (e) {
+      if (e.target.classList.contains('backlog-subject') || e.target.classList.contains('backlog-semester')) {
+        updateBacklogDetails();
+      }
+    });
+
+    document.addEventListener('DOMContentLoaded', function () {
+      toggleMetric();
+    });
+  </script>
+  {% endblock %}

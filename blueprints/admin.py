@@ -30,10 +30,11 @@ def download_sample():
         'tenth_marks': [85.5],
         'twelfth_marks': [88.2],
         'cgpa': [8.5],
+        'backlogs': [0],
         'skills': ['Python, SQL'],
         'projects': ['Library Management System']
     }
-    df = pd.read_csv(io.StringIO("roll_no,name,email,mobile,department,semester,tenth_marks,twelfth_marks,cgpa,skills,projects\n101,John Doe,john@example.com,9876543210,IT,5,85.5,88.2,8.5,\"Python, SQL\",Library Management System"))
+    df = pd.read_csv(io.StringIO("roll_no,name,email,mobile,department,semester,tenth_marks,twelfth_marks,cgpa,backlogs,skills,projects\n101,John Doe,john@example.com,9876543210,IT,5,85.5,88.2,8.5,0,\"Python, SQL\",Library Management System"))
     # Alternatively simpler:
     df = pd.DataFrame(data)
     
@@ -213,6 +214,11 @@ def bulk_import():
                         errors.append(f"Row {row_num} (Roll {roll_no}): Email '{email}' already registered to Roll {existing_student.roll_no}.")
                         continue 
 
+                    cgpa_val = float(row.get('cgpa', row.get('aggregate_cpi', 0)) or 0)
+                    backlogs_val = int(row.get('backlogs', 0))
+                    if backlogs_val > 0:
+                        cgpa_val = 0.0
+
                     student = Student(
                         roll_no=roll_no,
                         name=row.get('name', ''),
@@ -222,7 +228,8 @@ def bulk_import():
                         semester=int(row.get('semester', 1)),
                         tenth_marks=float(row.get('tenth_marks', 0) or 0),
                         twelfth_marks=float(row.get('twelfth_marks', 0) or 0),
-                        cgpa=float(row.get('cgpa', row.get('aggregate_cpi', 0)) or 0),
+                        cgpa=cgpa_val,
+                        backlogs=backlogs_val,
                         skills=row.get('skills', ''),
                         projects_internship=row.get('projects', '')
                     )
@@ -255,8 +262,19 @@ def bulk_import():
                                                         student.tenth_marks) or 0)
                     student.twelfth_marks = float(row.get('twelfth_marks',
                                                           student.twelfth_marks) or 0)
-                    student.cgpa = float(row.get('cgpa', row.get('aggregate_cpi',
-                                                          student.cgpa)) or 0)
+                    cgpa_val = float(row.get('cgpa', row.get('aggregate_cpi', student.cgpa)) or 0)
+                    backlogs_val = int(row.get('backlogs', 0)) # Default to 0 or existing? Maybe 0 if not present in sheet?
+                    # If sheet has backlogs column, use it, else keep existing? 
+                    # row.get returns None if not found? No, '0' default.
+                    # But if user doesn't update backlogs, it resets to 0?
+                    # Safer: check if column exists. 
+                    if 'backlogs' in row:
+                        backlogs_val = int(row['backlogs'])
+                        student.backlogs = backlogs_val
+                        if backlogs_val > 0:
+                            cgpa_val = 0.0
+                    
+                    student.cgpa = cgpa_val
                     student.skills = row.get('skills', student.skills)
                     student.projects_internship = row.get(
                         'projects', student.projects_internship)
@@ -400,6 +418,9 @@ def handle_request(req_id, action):
         student = req.student
         
         # Apply changes
+        # Apply changes
+        backlog_details_dump = changes.pop('backlog_details_dump', None)
+        
         for field, value in changes.items():
             if hasattr(student, field):
                 # Handle dates if necessary, currently stored as YYYY-MM-DD string
@@ -409,6 +430,41 @@ def handle_request(req_id, action):
                      except:
                          pass
                 setattr(student, field, value)
+        
+        # Post-processing for Mutual Exclusivity and Backlog Details
+        if 'cgpa' in changes and changes['cgpa'] is not None:
+            # If CGPA was updated, clear backlogs
+             student.backlogs = 0
+             from models import Backlog
+             Backlog.query.filter_by(student_id=student.id).delete()
+        
+        elif 'backlogs' in changes:
+            # If backlogs count changed, ensure CGPA is None
+             student.cgpa = None
+             
+             # If we have the dump, let's try to update the details
+             if backlog_details_dump:
+                 import json
+                 try:
+                     from models import Backlog
+                     # Clear existing first
+                     Backlog.query.filter_by(student_id=student.id).delete()
+                     
+                     details = json.loads(backlog_details_dump)
+                     for entry in details:
+                         b = Backlog(
+                             student_id=student.id,
+                             subject_name=entry['subject'],
+                             semester=entry['semester']
+                         )
+                         db.session.add(b)
+                 except Exception as e:
+                     print(f"Error applying backlog details: {e}")
+        
+        # If backlogs became 0 (via explicit change to 0 OR switch to CGPA), ensure details are gone
+        if student.backlogs == 0:
+             from models import Backlog
+             Backlog.query.filter_by(student_id=student.id).delete()
         
         req.status = 'Approved'
         flash('Request approved and changes applied.', 'success')

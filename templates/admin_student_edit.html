@@ -131,10 +131,27 @@
                             {% endfor %}
                         </div>
                         <div class="col-md-4 mb-3">
+                            <label class="form-label">Result Metric</label>
+                            <div>
+                                {% for subfield in form.metric_type %}
+                                <div class="form-check form-check-inline">
+                                    {{ subfield(class="form-check-input", onclick="toggleMetric()") }}
+                                    {{ subfield.label(class="form-check-label") }}
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3" id="cgpa-field">
                             {{ form.cgpa.label(class="form-label") }}
-                            {{ form.cgpa(class="form-control" + (" is-invalid" if form.cgpa.errors
-                            else "")) }}
+                            {{ form.cgpa(class="form-control" + (" is-invalid" if form.cgpa.errors else "")) }}
                             {% for error in form.cgpa.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="col-md-4 mb-3" id="backlogs-field" style="display: none;">
+                            {{ form.backlogs.label(class="form-label") }}
+                            {{ form.backlogs(class="form-control" + (" is-invalid" if form.backlogs.errors else "")) }}
+                            {% for error in form.backlogs.errors %}
                             <div class="invalid-feedback">{{ error }}</div>
                             {% endfor %}
                         </div>
@@ -174,4 +191,30 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function toggleMetric() {
+        const metric = document.querySelector('input[name="metric_type"]:checked').value;
+        const cgpaField = document.getElementById('cgpa-field');
+        const backlogsField = document.getElementById('backlogs-field');
+
+        if (metric === 'cgpa') {
+            cgpaField.style.display = 'block';
+            backlogsField.style.display = 'none';
+        } else {
+            cgpaField.style.display = 'none';
+            backlogsField.style.display = 'block';
+        }
+    }
+    document.addEventListener('DOMContentLoaded', function () {
+        const backlogsInput = document.getElementById('backlogs');
+        if (backlogsInput && backlogsInput.value && parseInt(backlogsInput.value) > 0) {
+            const radio = document.querySelector('input[name="metric_type"][value="backlogs"]');
+            if (radio) radio.checked = true;
+        }
+        toggleMetric();
+    });
+</script>
 {% endblock %}

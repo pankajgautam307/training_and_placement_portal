@@ -20,6 +20,7 @@ class Student(UserMixin, db.Model):
     tenth_marks = db.Column(db.Float)
     twelfth_marks = db.Column(db.Float)
     cgpa = db.Column(db.Float)
+    backlogs = db.Column(db.Integer, default=0) # New field to store backlogs if any
     skills = db.Column(db.Text)
     projects_internship = db.Column(db.Text)
     profile_photo = db.Column(db.String(120), nullable=True)
@@ -32,6 +33,9 @@ class Student(UserMixin, db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow,
                            onupdate=datetime.utcnow)
+    
+    # Relationship for detailed backlog entries
+    backlogs_list = db.relationship('Backlog', backref='student', cascade='all, delete-orphan', lazy=True)
 
     def set_password(self, password):
         self.password_hash = bcrypt.generate_password_hash(password).decode('utf-8')
@@ -41,6 +45,17 @@ class Student(UserMixin, db.Model):
 
     def get_id(self):
         return f"S-{self.id}"
+
+
+class Backlog(db.Model):
+    """Model to store individual backlog details"""
+    __tablename__ = 'backlogs'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    student_id = db.Column(db.Integer, db.ForeignKey('students.id'), nullable=False)
+    subject_name = db.Column(db.String(100), nullable=False)
+    semester = db.Column(db.Integer, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 
 class AdminUser(UserMixin, db.Model):
@@ -194,3 +209,110 @@ class QuizAttempt(db.Model):
     answers = db.Column(db.Text) # JSON string of selected options: {'question_id': 'option', ...}
     
     student = db.relationship('Student', backref='quiz_attempts')
+
+# -------------------------------------------------------------------
+# Job Search & Recommendation System Models (Plan C)
+# -------------------------------------------------------------------
+
+class JobSource(db.Model):
+    """Tracks where jobs come from (API vs Manual)"""
+    __tablename__ = 'job_sources'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100))      # "API-Auto", "Manual Entry", "LinkedIn-Manual"
+    type = db.Column(db.String(20))       # "api", "manual", "scrape"
+    is_active = db.Column(db.Boolean, default=True)
+
+class JobListing(db.Model):
+    """Unified job listing model (both external and manual)"""
+    __tablename__ = 'job_listings'
+    
+    # Identity
+    id = db.Column(db.Integer, primary_key=True)
+    source_id = db.Column(db.Integer, db.ForeignKey('job_sources.id'))
+    admin_id = db.Column(db.Integer, db.ForeignKey('admin_users.id'))
+    
+    # Core Job Details
+    title = db.Column(db.String(200), nullable=False)
+    company_name = db.Column(db.String(200), nullable=False)
+    location = db.Column(db.String(200))
+    job_type = db.Column(db.String(50))              # "Full-time", "Internship", "Contract"
+    experience_required = db.Column(db.String(50))   # "0-2 years", "Freshers"
+    
+    # Compensation
+    salary_min = db.Column(db.Float)                 # 3.5 (LPA)
+    salary_max = db.Column(db.Float)                 # 6.0 (LPA)
+    salary_text = db.Column(db.String(100))          # "3.5-6 LPA" or "Not Disclosed"
+    
+    # Details
+    description = db.Column(db.Text)
+    required_skills = db.Column(db.Text)             # JSON: ["Python", "Django", "REST API"]
+    preferred_skills = db.Column(db.Text)            # JSON: ["AWS", "Docker"]
+    responsibilities = db.Column(db.Text)
+    qualifications = db.Column(db.Text)
+    
+    # Application Info
+    application_url = db.Column(db.String(500))      # "https://company.com/apply/12345"
+    application_email = db.Column(db.String(200))    # "careers@company.com"
+    application_instructions = db.Column(db.Text)    # "Send resume with subject: JOB-2024"
+    
+    # Metadata
+    external_id = db.Column(db.String(255))          # ID from API source
+    posted_date = db.Column(db.DateTime)
+    fetched_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Verification Workflow
+    verification_status = db.Column(db.String(20), default='Pending')  # Pending, Verified, Rejected
+    verification_notes = db.Column(db.Text)
+    verified_by = db.Column(db.Integer, db.ForeignKey('admin_users.id'))
+    verified_at = db.Column(db.DateTime)
+    
+    # Recommendation Status
+    is_recommended = db.Column(db.Boolean, default=False)
+    recommended_at = db.Column(db.DateTime)
+    
+    # Student Targeting (only for recommended jobs)
+    target_departments = db.Column(db.String(200))   # "IT,CS,ECE"
+    min_cgpa = db.Column(db.Float)                   # 7.0
+    max_backlogs = db.Column(db.Integer)             # 2
+    application_deadline = db.Column(db.DateTime)
+    
+    # Analytics
+    views_count = db.Column(db.Integer, default=0)
+    clicks_count = db.Column(db.Integer, default=0)
+    applications_count = db.Column(db.Integer, default=0)
+
+    source = db.relationship('JobSource', backref='jobs')
+    admin = db.relationship('AdminUser', foreign_keys=[admin_id], backref='posted_jobs')
+    verifier = db.relationship('AdminUser', foreign_keys=[verified_by], backref='verified_jobs')
+
+class StudentJobInteraction(db.Model):
+    """Track all student interactions with jobs"""
+    __tablename__ = 'student_job_interactions'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    job_id = db.Column(db.Integer, db.ForeignKey('job_listings.id'))
+    student_id = db.Column(db.Integer, db.ForeignKey('students.id'))
+    
+    interaction_type = db.Column(db.String(20))      # 'view', 'click', 'apply', 'save'
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # For 'apply' interactions
+    application_status = db.Column(db.String(50))    # "Interested", "Applied", "Withdrawn"
+    notes = db.Column(db.Text)
+    
+    job = db.relationship('JobListing', backref='interactions')
+    student = db.relationship('Student', backref='job_interactions')
+
+class JobSearchTemplate(db.Model):
+    """Save common search queries for reuse"""
+    __tablename__ = 'job_search_templates'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    admin_id = db.Column(db.Integer, db.ForeignKey('admin_users.id'))
+    name = db.Column(db.String(100))
+    search_params = db.Column(db.Text)               # JSON
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    admin = db.relationship('AdminUser', backref='search_templates')
+
