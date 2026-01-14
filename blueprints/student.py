@@ -109,6 +109,7 @@ def edit_profile():
                 if f.filename:
                     filename = secure_filename(f"{current_user.roll_no}_photo_{f.filename}")
                     path = os.path.join(current_app.root_path, 'static/uploads/profiles', filename)
+                    os.makedirs(os.path.dirname(path), exist_ok=True)
                     f.save(path)
                     current_user.profile_photo = f"uploads/profiles/{filename}"
                 
@@ -117,6 +118,7 @@ def edit_profile():
                 if f.filename:
                     filename = secure_filename(f"{current_user.roll_no}_resume_{f.filename}")
                     path = os.path.join(current_app.root_path, 'static/uploads/resumes', filename)
+                    os.makedirs(os.path.dirname(path), exist_ok=True)
                     f.save(path)
                     current_user.resume_path = f"uploads/resumes/{filename}"
                 
@@ -135,6 +137,7 @@ def edit_profile():
                 if f.filename: # Ensure it has a filename
                     filename = secure_filename(f"{current_user.roll_no}_photo_{f.filename}")
                     path = os.path.join(current_app.root_path, 'static/uploads/profiles', filename)
+                    os.makedirs(os.path.dirname(path), exist_ok=True)
                     f.save(path)
                     current_user.profile_photo = f"uploads/profiles/{filename}"
                     files_uploaded = True
@@ -144,6 +147,7 @@ def edit_profile():
                 if f.filename: # Ensure it has a filename
                     filename = secure_filename(f"{current_user.roll_no}_resume_{f.filename}")
                     path = os.path.join(current_app.root_path, 'static/uploads/resumes', filename)
+                    os.makedirs(os.path.dirname(path), exist_ok=True)
                     f.save(path)
                     current_user.resume_path = f"uploads/resumes/{filename}"
                     files_uploaded = True
