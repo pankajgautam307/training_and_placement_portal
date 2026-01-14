@@ -157,6 +157,10 @@ def change_password():
 
     form = ChangePasswordForm()
     if form.validate_on_submit():
+        if not current_user.check_password(form.old_password.data):
+             flash('Incorrect current password.', 'danger')
+             return render_template('change_password.html', form=form)
+
         current_user.set_password(form.password.data)
         current_user.is_password_changed = True
         current_user.is_email_verified = False # Invalidate until verified

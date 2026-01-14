@@ -90,7 +90,7 @@ class ProfileUpdateRequest(db.Model):
     status = db.Column(db.String(20), default='Pending') # Pending, Approved, Rejected
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
-    student = db.relationship('Student', backref='profile_requests')
+    student = db.relationship('Student', backref=db.backref('profile_requests', cascade='all, delete-orphan'))
 
 
 class EmailLog(db.Model):
@@ -152,7 +152,7 @@ class JobApplication(db.Model):
     status = db.Column(db.String(20), default='Applied') # Applied, Shortlisted, Rejected, Selected
     applied_at = db.Column(db.DateTime, default=datetime.utcnow)
     
-    student = db.relationship('Student', backref='applications')
+    student = db.relationship('Student', backref=db.backref('applications', cascade='all, delete-orphan'))
 
 class DriveInvitation(db.Model):
     __tablename__ = 'drive_invitations'
@@ -208,7 +208,7 @@ class QuizAttempt(db.Model):
     date_taken = db.Column(db.DateTime, default=datetime.utcnow)
     answers = db.Column(db.Text) # JSON string of selected options: {'question_id': 'option', ...}
     
-    student = db.relationship('Student', backref='quiz_attempts')
+    student = db.relationship('Student', backref=db.backref('quiz_attempts', cascade='all, delete-orphan'))
 
 # -------------------------------------------------------------------
 # Job Search & Recommendation System Models (Plan C)
@@ -302,7 +302,7 @@ class StudentJobInteraction(db.Model):
     notes = db.Column(db.Text)
     
     job = db.relationship('JobListing', backref='interactions')
-    student = db.relationship('Student', backref='job_interactions')
+    student = db.relationship('Student', backref=db.backref('job_interactions', cascade='all, delete-orphan'))
 
 class JobSearchTemplate(db.Model):
     """Save common search queries for reuse"""
