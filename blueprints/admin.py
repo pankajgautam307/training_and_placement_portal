@@ -367,29 +367,60 @@ def edit_student(student_id):
     
     form = StudentEditForm(obj=student)
     
+    # Pre-populate backlog details if student has backlogs
+    if request.method == 'GET':
+        if hasattr(student, 'backlogs_list') and student.backlogs_list:
+            import json
+            backlog_data = [{'subject': b.subject_name, 'semester': b.semester} for b in student.backlogs_list]
+            form.backlog_details.data = json.dumps(backlog_data)
+            
+            
     if form.validate_on_submit():
         # Check uniqueness constraints if changed
         if form.roll_no.data != student.roll_no and Student.query.filter_by(roll_no=form.roll_no.data).first():
             flash('Roll number already exists.', 'danger')
             return render_template('admin_student_edit.html', form=form, student=student)
             
-        # Email is read-only, so no need to check for changes or uniqueness here
-        # form.populate_obj(student) will overwrite student.email with form.email.data which should be same
-        # provided the readonly field sends data. If it doesn't send data, we need to be careful.
-        # WTForms usually handles this, but let's ensure we don't accidentally blank it if some browser doesn't send readonly.
-        
-        # Actually, let's explicitely set email back to original just in case, or trust the form. 
-        # Since it is readonly, user can't change it. If they hack it, we should probably check.
-        # But user requirement was "edit everything except email".
-        
-        # Proper way: Check if email sent differs.
+        # Email is read-only
         if form.email.data != student.email:
-             # If changed (hacked), check uniqueness
              if Student.query.filter_by(email=form.email.data).first():
                  flash('Email already exists.', 'danger')
                  return render_template('admin_student_edit.html', form=form, student=student)
 
+        # Handle Mutual Exclusivity
+        if form.metric_type.data == 'cgpa':
+             form.backlogs.data = 0 
+        else:
+             # Backlogs
+             form.cgpa.data = None
+             import json
+             try:
+                 backlog_data = json.loads(form.backlog_details.data)
+                 form.backlogs.data = len(backlog_data)
+             except:
+                 form.backlogs.data = 0
+
         form.populate_obj(student)
+
+        # Update Backlog Details in Database
+        from models import Backlog
+        # Clear existing backlogs
+        Backlog.query.filter_by(student_id=student.id).delete()
+        
+        if form.metric_type.data == 'backlogs':
+            import json
+            try:
+                backlog_data = json.loads(form.backlog_details.data)
+                for entry in backlog_data:
+                    backlog = Backlog(
+                        student_id=student.id,
+                        subject_name=entry['subject'],
+                        semester=entry['semester']
+                    )
+                    db.session.add(backlog)
+            except:
+                pass
+
         db.session.commit()
         flash('Student updated successfully.', 'success')
         return redirect(url_for('admin.list_students'))
@@ -838,16 +869,11 @@ Training & Placement Office"""
         
         # Send Email
         if company.email:
-            try:
-                msg = Message(
-                    subject=form.subject.data,
-                    recipients=[company.email],
-                    body=form.message.data
-                )
-                mail.send(msg)
+            success, msg = send_email(form.subject.data, [company.email], form.message.data)
+            if success:
                 flash(f'Invitation sent to {company.name} ({company.email}).', 'success')
-            except Exception as e:
-                flash(f'Invitation recorded but email failed: {str(e)}', 'warning')
+            else:
+                flash(f'Invitation recorded but email failed to send. {msg}', 'warning')
         else:
             flash(f'Invitation recorded. Note: Company has no email address.', 'info')
             

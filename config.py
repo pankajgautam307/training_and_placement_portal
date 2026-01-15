@@ -26,6 +26,10 @@ class Config:
     MAIL_API_TOKEN = os.getenv('MAIL_API_TOKEN')
     MAIL_API_URL = os.getenv('MAIL_API_URL', 'https://send.api.mailtrap.io/api/send')
     
+    # Override Recipient (for testing in restricted environments like Resend Sandbox)
+    # If set, ALL emails will be sent to this address instead of the actual recipient.
+    MAIL_OVERRIDE_RECIPIENT = os.getenv('MAIL_OVERRIDE_RECIPIENT')
+    
     # Uploads
     UPLOAD_FOLDER = os.path.join(os.getcwd(), 'uploads')
     MAX_CONTENT_LENGTH = 64 * 1024 * 1024  # 64MB max limit

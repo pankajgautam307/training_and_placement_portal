@@ -148,12 +148,56 @@
                             <div class="invalid-feedback">{{ error }}</div>
                             {% endfor %}
                         </div>
-                        <div class="col-md-4 mb-3" id="backlogs-field" style="display: none;">
-                            {{ form.backlogs.label(class="form-label") }}
-                            {{ form.backlogs(class="form-control" + (" is-invalid" if form.backlogs.errors else "")) }}
-                            {% for error in form.backlogs.errors %}
-                            <div class="invalid-feedback">{{ error }}</div>
+                        <div class="col-md-12 mb-3" id="backlogs-field" style="display: none;">
+                            <label class="form-label text-warning">Backlog Details</label>
+                            <div id="backlog-entries">
+                                <!-- Server-side rendered backlogs -->
+                                {% if student.backlogs_list %}
+                                {% for backlog in student.backlogs_list %}
+                                <div class="row g-2 mb-2 backlog-entry" id="backlog-{{ loop.index }}">
+                                    <div class="col-md-6">
+                                        <input type="text" class="form-control backlog-subject"
+                                            placeholder="Subject Name" value="{{ backlog.subject_name }}" required>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <select class="form-select backlog-semester" required>
+                                            <option value="">Select Semester</option>
+                                            <option value="1" {% if backlog.semester==1 %}selected{% endif %}>Semester 1
+                                            </option>
+                                            <option value="2" {% if backlog.semester==2 %}selected{% endif %}>Semester 2
+                                            </option>
+                                            <option value="3" {% if backlog.semester==3 %}selected{% endif %}>Semester 3
+                                            </option>
+                                            <option value="4" {% if backlog.semester==4 %}selected{% endif %}>Semester 4
+                                            </option>
+                                            <option value="5" {% if backlog.semester==5 %}selected{% endif %}>Semester 5
+                                            </option>
+                                            <option value="6" {% if backlog.semester==6 %}selected{% endif %}>Semester 6
+                                            </option>
+                                            <option value="6" {% if backlog.semester==6 %}selected{% endif %}>Semester 6
+                                            </option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <button type="button" class="btn btn-sm btn-danger"
+                                            onclick="removeBacklogEntry({{ loop.index }})">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                                {% endif %}
+                            </div>
+                            <button type="button" class="btn btn-sm btn-outline-info mt-2" onclick="addBacklogEntry()">
+                                <i class="fa-solid fa-plus me-1"></i>Add Backlog
+                            </button>
+                            {{ form.backlog_details(style="display:none;") }}
+                            {% for error in form.backlog_details.errors %}
+                            <div class="text-danger small mt-1">{{ error }}</div>
                             {% endfor %}
+
+                            <!-- Hidden field to store backlog count -->
+                            {{ form.backlogs(style="display:none;") }}
                         </div>
                     </div>
 
@@ -195,6 +239,8 @@
 
 {% block scripts %}
 <script>
+    let backlogCount = {{ student.backlogs_list| length if student.backlogs_list else 0 }};
+
     function toggleMetric() {
         const metric = document.querySelector('input[name="metric_type"]:checked').value;
         const cgpaField = document.getElementById('cgpa-field');
@@ -206,13 +252,90 @@
         } else {
             cgpaField.style.display = 'none';
             backlogsField.style.display = 'block';
+            // Clear CGPA value when switching to backlogs
+            if (document.getElementById('cgpa')) {
+                document.getElementById('cgpa').value = '';
+            }
         }
     }
+
+    function addBacklogEntry(subject = '', semester = '') {
+        backlogCount++;
+        const container = document.getElementById('backlog-entries');
+        const entryDiv = document.createElement('div');
+        entryDiv.className = 'row g-2 mb-2 backlog-entry';
+        entryDiv.id = `backlog-${backlogCount}`;
+
+        entryDiv.innerHTML = `
+            <div class="col-md-6">
+                <input type="text" class="form-control backlog-subject" placeholder="Subject Name" value="${subject}" required>
+            </div>
+            <div class="col-md-4">
+                <select class="form-select backlog-semester" required>
+                    <option value="">Select Semester</option>
+                    <option value="1" ${semester == 1 ? 'selected' : ''}>Semester 1</option>
+                    <option value="2" ${semester == 2 ? 'selected' : ''}>Semester 2</option>
+                    <option value="3" ${semester == 3 ? 'selected' : ''}>Semester 3</option>
+                    <option value="4" ${semester == 4 ? 'selected' : ''}>Semester 4</option>
+                    <option value="5" ${semester == 5 ? 'selected' : ''}>Semester 5</option>
+                    <option value="6" ${semester == 6 ? 'selected' : ''}>Semester 6</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="button" class="btn btn-sm btn-danger" onclick="removeBacklogEntry(${backlogCount})">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
+            </div>
+        `;
+
+        container.appendChild(entryDiv);
+        updateBacklogDetails();
+    }
+
+    function removeBacklogEntry(id) {
+        const entry = document.getElementById(`backlog-${id}`);
+        if (entry) {
+            entry.remove();
+            updateBacklogDetails();
+        }
+    }
+
+    function updateBacklogDetails() {
+        const entries = document.querySelectorAll('.backlog-entry');
+        const backlogData = [];
+
+        entries.forEach(entry => {
+            const subject = entry.querySelector('.backlog-subject').value.trim();
+            const semester = entry.querySelector('.backlog-semester').value;
+
+            if (subject && semester) {
+                backlogData.push({
+                    subject: subject,
+                    semester: parseInt(semester)
+                });
+            }
+        });
+
+        document.getElementById('backlog_details').value = JSON.stringify(backlogData);
+        document.getElementById('backlogs').value = backlogData.length;
+    }
+
+    document.addEventListener('input', function (e) {
+        if (e.target.classList.contains('backlog-subject') || e.target.classList.contains('backlog-semester')) {
+            updateBacklogDetails();
+        }
+    });
+
     document.addEventListener('DOMContentLoaded', function () {
+        // Initialize hidden JSON field on load if data exists
+        updateBacklogDetails();
+
         const backlogsInput = document.getElementById('backlogs');
         if (backlogsInput && backlogsInput.value && parseInt(backlogsInput.value) > 0) {
             const radio = document.querySelector('input[name="metric_type"][value="backlogs"]');
-            if (radio) radio.checked = true;
+            if (radio && !radio.checked) {
+                radio.checked = true;
+            }
         }
         toggleMetric();
     });

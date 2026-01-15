@@ -14,6 +14,14 @@ def send_email(subject, recipients, body, html=None):
     api_token = current_app.config.get('MAIL_API_TOKEN')
     api_url = current_app.config.get('MAIL_API_URL')
     
+    # Check for Override Recipient (Testing/Sandbox)
+    override_email = current_app.config.get('MAIL_OVERRIDE_RECIPIENT')
+    if override_email:
+        original_recipients = ", ".join(recipients)
+        subject = f"[TEST OVERRIDE -> {original_recipients}] {subject}"
+        recipients = [override_email]
+        print(f"DEBUG: Email Override Enabled. Redirecting to {override_email}")
+    
     
     if api_token:
         try:
@@ -73,18 +81,16 @@ def send_email(subject, recipients, body, html=None):
             
             if response.status_code in [200, 201, 202]:
                 print(f"SUCCESS: Email sent via API. ID: {response.text}")
-                return True
+                return True, "Email sent successfully."
             else:
-                print(f"ERROR: API Sending failed. Status: {response.status_code}, Response: {response.text}")
-                return False
+                error_msg = f"API Sending failed. Status: {response.status_code}, Response: {response.text}"
+                print(f"ERROR: {error_msg}")
+                return False, error_msg
                 
         except Exception as e:
-            print(f"EXCEPTION: API Email sending error: {e}")
-            return False
-                
-        except Exception as e:
-            print(f"EXCEPTION: API Email sending error: {e}")
-            return False
+            error_msg = f"API Email sending error: {str(e)}"
+            print(f"EXCEPTION: {error_msg}")
+            return False, error_msg
             
     else:
         # Fallback to SMTP (Flask-Mail) - Default for Localhost
@@ -97,7 +103,8 @@ def send_email(subject, recipients, body, html=None):
             )
             mail.send(msg)
             print(f"SUCCESS: Email sent via SMTP to {recipients}")
-            return True
+            return True, "Email sent successfully via SMTP."
         except Exception as e:
-            print(f"ERROR: SMTP Email sending error: {e}")
-            return False
+            error_msg = f"SMTP Email sending error: {str(e)}"
+            print(f"ERROR: {error_msg}")
+            return False, error_msg

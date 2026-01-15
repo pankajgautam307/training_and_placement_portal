@@ -1,15 +1,16 @@
 import unittest
 from app import create_app, db
 from config import Config
-from models import Student, EmailLog, AdminUser
+from models import Company, DriveInvitation, AdminUser
 from unittest.mock import patch, MagicMock
 
+# Define TestConfig with proper variables
 class TestConfig(Config):
     TESTING = True
     SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
     WTF_CSRF_ENABLED = False
     
-class EmailApprovalTestCase(unittest.TestCase):
+class EmailInvitationTestCase(unittest.TestCase):
     def setUp(self):
         self.app = create_app(TestConfig)
         self.app_context = self.app.app_context()
@@ -21,15 +22,14 @@ class EmailApprovalTestCase(unittest.TestCase):
         self.admin.set_password('pass')
         db.session.add(self.admin)
         
-        # Create Student
-        self.student = Student(
-            roll_no='123', name='Test Student', email='test@student.com',
-            mobile='9999999999', department='CSE', semester=1,
-            tenth_marks=90, twelfth_marks=90, cgpa=9.0, backlogs=0
+        # Create Company
+        self.company = Company(
+            name='Test Corp',
+            email='recruiter@testcorp.com',
+            required_skills='Python',
+            average_salary=10.0
         )
-        self.student.set_password('password')
-        self.student.status = 'Pending'
-        db.session.add(self.student)
+        db.session.add(self.company)
         db.session.commit()
         
         self.client = self.app.test_client()
@@ -41,27 +41,30 @@ class EmailApprovalTestCase(unittest.TestCase):
         self.app_context.pop()
         
     @patch('blueprints.admin.send_email')
-    def test_approve_student_calls_send_email(self, mock_send_email):
-        # Setup mock to return True
-        mock_send_email.return_value = True
+    def test_invite_company_calls_send_email(self, mock_send_email):
+        # Setup mock to return (True, Msg) tuple - IMPORTANT!
+        mock_send_email.return_value = (True, "Success")
         
-        # Action: Approve student
-        response = self.client.post(f'/admin/student/{self.student.id}/status', data={'status': 'Approved'}, follow_redirects=True)
+        # Action: Invite company
+        response = self.client.post(f'/admin/invite/{self.company.id}', data={
+            'subject': 'Invitation to Drive',
+            'message': 'We invite you to our campus.'
+        }, follow_redirects=True)
         
         # Assertions
         mock_send_email.assert_called_once()
         args, _ = mock_send_email.call_args
-        self.assertIn('Welcome to the Training & Placement Portal', args[0])
-        self.assertEqual(args[1], ['test@student.com'])
         
-        # Check DB Log
-        log = EmailLog.query.filter_by(student_id=self.student.id).first()
-        self.assertIsNotNone(log)
-        self.assertEqual(log.status, 'Success')
+        # send_email(subject, recipients, body)
+        self.assertEqual(args[0], 'Invitation to Drive')
+        self.assertEqual(args[1], ['recruiter@testcorp.com'])
+        self.assertIn('We invite you', args[2])
+        
+        self.assertIn('Invitation sent to Test Corp', response.get_data(as_text=True))
         
 if __name__ == '__main__':
     import sys
-    suite = unittest.TestLoader().loadTestsFromTestCase(EmailApprovalTestCase)
+    suite = unittest.TestLoader().loadTestsFromTestCase(EmailInvitationTestCase)
     result = unittest.TextTestRunner(stream=sys.stdout, verbosity=2).run(suite)
     if not result.wasSuccessful():
         sys.exit(1)
