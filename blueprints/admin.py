@@ -8,6 +8,7 @@ from extensions import db, mail
 from models import Student, AdminUser, EmailLog
 from flask_mail import Message
 from forms import AdminBulkImportForm
+from utils.email_sender import send_email
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
@@ -50,27 +51,25 @@ def download_sample():
 
 
 def send_welcome_email(student):
-    msg = Message(
-        subject="Welcome to the Training & Placement Portal",
-        recipients=[student.email]
-    )
-    msg.body = (
+    subject = "Welcome to the Training & Placement Portal"
+    body = (
         f"Dear {student.name},\n\n"
         f"Your registration has been approved.\n"
         f"You can now log in using your Roll No. ({student.roll_no}) "
         f"and your password.\n\n"
         f"Regards,\nTraining & Placement Office"
     )
-    try:
-        mail.send(msg)
+    
+    # Use the unified send_email utility which handles Resend API/SMTP selection
+    if send_email(subject, [student.email], body):
         log = EmailLog(student_id=student.id,
                        email_type='Approval', status='Success')
         db.session.add(log)
-    except Exception as e:
+    else:
         log = EmailLog(student_id=student.id,
                        email_type='Approval',
                        status='Failed',
-                       error_message=str(e))
+                       error_message="Failed to send via send_email utility")
         db.session.add(log)
 
 @admin_bp.route('/profile', methods=['GET', 'POST'])
@@ -526,6 +525,7 @@ def list_companies():
         company = Company(
             name=form.name.data,
             email=form.email.data, # Add email
+            contact_number=form.contact_number.data, # Add contact number
             website=form.website.data,
             location=form.location.data,
             industry=form.industry.data,
@@ -540,6 +540,32 @@ def list_companies():
         
     companies = Company.query.order_by(Company.created_at.desc()).all()
     return render_template('admin_companies.html', form=form, companies=companies)
+
+@admin_bp.route('/company/<int:company_id>/edit', methods=['GET', 'POST'])
+@login_required
+def edit_company(company_id):
+    if not isinstance(current_user._get_current_object(), AdminUser):
+        flash('Unauthorized', 'danger')
+        return redirect(url_for('auth.admin_login'))
+        
+    from forms import CompanyForm
+    from models import Company
+    
+    company = Company.query.get_or_404(company_id)
+    form = CompanyForm(obj=company)
+    
+    if form.validate_on_submit():
+        # Check uniqueness of name if changed
+        if form.name.data != company.name and Company.query.filter_by(name=form.name.data).first():
+             flash('Company name already exists.', 'danger')
+             return render_template('admin_company_edit.html', form=form, company=company)
+
+        form.populate_obj(company)
+        db.session.commit()
+        flash('Company details updated successfully.', 'success')
+        return redirect(url_for('admin.list_companies'))
+        
+    return render_template('admin_company_edit.html', form=form, company=company)
 
 @admin_bp.route('/drives', methods=['GET'])
 @login_required

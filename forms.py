@@ -219,6 +219,7 @@ class StudentProfileForm(FlaskForm):
 class CompanyForm(FlaskForm):
     name = StringField('Company Name', validators=[DataRequired(), Length(max=100)])
     email = StringField('Email Address', validators=[Optional(), Email(), Length(max=120)])
+    contact_number = StringField('Contact Number', validators=[Optional(), Length(min=10, max=15), Regexp(r'^\d{10}$', message="Contact number must be exactly 10 digits")])
     website = StringField('Website', validators=[Optional(), Length(max=200), URL(message="Invalid URL")])
     location = StringField('Location', validators=[Optional(), Length(max=100)])
     industry = StringField('Industry', validators=[Optional(), Length(max=100)])
