@@ -46,9 +46,10 @@ if __name__ == '__main__':
     with app.app_context():
         db.create_all()
         # Create default admin if not exists
-        if not AdminUser.query.filter_by(username='tpo').first():
-            admin = AdminUser(username='tpo', email='tpo@example.com')
-            admin.set_password('admin123')
+        default_user = app.config['ADMIN_USERNAME']
+        if not AdminUser.query.filter_by(username=default_user).first():
+            admin = AdminUser(username=default_user, email=app.config['ADMIN_EMAIL'])
+            admin.set_password(app.config['ADMIN_PASSWORD'])
             db.session.add(admin)
             db.session.commit()
     app.run(debug=True)

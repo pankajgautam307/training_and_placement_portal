@@ -34,3 +34,8 @@ class Config:
     UPLOAD_FOLDER = os.path.join(os.getcwd(), 'uploads')
     MAX_CONTENT_LENGTH = 64 * 1024 * 1024  # 64MB max limit
     ALLOWED_EXTENSIONS = {'xlsx', 'xls', 'csv'}
+
+    # Admin Credentials
+    ADMIN_USERNAME = os.getenv('ADMIN_USERNAME', 'tpo')
+    ADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD', 'admin123')
+    ADMIN_EMAIL = os.getenv('ADMIN_EMAIL', 'tpo@example.com')

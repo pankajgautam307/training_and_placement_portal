@@ -53,10 +53,11 @@ def init_db():
                 print("Schema Check: 'contact_number' column already exists.")
 
         print("Checking for default admin user...")
-        if not AdminUser.query.filter_by(username='tpo').first():
-            print("Creating default admin user 'tpo'...")
-            admin = AdminUser(username='tpo', email='tpo@example.com')
-            admin.set_password('admin123')
+        default_user = app.config['ADMIN_USERNAME']
+        if not AdminUser.query.filter_by(username=default_user).first():
+            print(f"Creating default admin user '{default_user}'...")
+            admin = AdminUser(username=default_user, email=app.config['ADMIN_EMAIL'])
+            admin.set_password(app.config['ADMIN_PASSWORD'])
             db.session.add(admin)
             db.session.commit()
             print("Default admin created.")
