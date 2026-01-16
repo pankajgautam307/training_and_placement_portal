@@ -21,8 +21,8 @@ class Config:
     MAIL_PASSWORD = os.getenv('MAIL_PASSWORD')
     MAIL_DEFAULT_SENDER = os.getenv('MAIL_DEFAULT_SENDER', MAIL_USERNAME)
     
-    # API Email Config (Mailtrap/Resend) for Production
-    # Default URL is for Mailtrap (as requested), but can be overridden for Resend etc.
+    # API Email Config (Mailtrap/Resend/Brevo) for Production
+    # Default URL can be set to Brevo: https://api.brevo.com/v3/smtp/email
     MAIL_API_TOKEN = os.getenv('MAIL_API_TOKEN')
     MAIL_API_URL = os.getenv('MAIL_API_URL', 'https://send.api.mailtrap.io/api/send')
     

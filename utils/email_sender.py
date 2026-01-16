@@ -6,7 +6,7 @@ from flask_mail import Message
 
 def send_email(subject, recipients, body, html=None):
     """
-    Send email using either SMTP (Flask-Mail) or HTTP API (e.g. Mailtrap/Resend)
+    Send email using either SMTP (Flask-Mail) or HTTP API (e.g. Mailtrap/Resend/Brevo)
     based on configuration.
     """
     
@@ -25,20 +25,35 @@ def send_email(subject, recipients, body, html=None):
     
     if api_token:
         try:
-            # Smart Auto-Detection for Resend
+            # Smart Auto-Detection for Resend / Brevo
             # Resend keys typically start with 're_'
+            # Brevo keys typically start with 'xkeysib-'
             is_resend = 'resend.com' in api_url or api_token.startswith('re_')
+            is_brevo = 'brevo.com' in api_url or api_token.startswith('xkeysib-')
             
             # If token looks like Resend but URL is default (Mailtrap), switch to Resend URL automatically
-            if api_token.startswith('re_') and 'resend.com' in api_url:
+            if api_token.startswith('re_') and 'resend.com' not in api_url:
                 print("DEBUG: Detected Resend Token URL. Switching to Resend API URL.")
                 api_url = 'https://api.resend.com/emails'
                 is_resend = True
+                is_brevo = False
+            
+            # If token looks like Brevo but URL is default, switch to Brevo
+            if api_token.startswith('xkeysib-') and 'brevo.com' not in api_url:
+                 print("DEBUG: Detected Brevo Token. Switching to Brevo API URL.")
+                 api_url = 'https://api.brevo.com/v3/smtp/email'
+                 is_brevo = True
+                 is_resend = False
 
-            print(f"DEBUG: Attempting to send email via API to {recipients}. Provider: {'Resend' if is_resend else 'Other'}")
+            provider_name = 'Resend' if is_resend else ('Brevo' if is_brevo else 'Other')
+            print(f"DEBUG: Attempting to send email via API to {recipients}. Provider: {provider_name}")
             
             sender_email = current_app.config.get('MAIL_DEFAULT_SENDER') or os.getenv('MAIL_USERNAME')
             
+            headers = {
+                "Content-Type": "application/json"
+            }
+
             if is_resend:
                 # Resend Specific Logic
                 final_sender = "onboarding@resend.dev" # Default safe sender
@@ -61,6 +76,26 @@ def send_email(subject, recipients, body, html=None):
                     "text": body,
                     "html": html or body
                 }
+                headers["Authorization"] = f"Bearer {api_token}"
+
+            elif is_brevo:
+                 # Brevo (Sendinblue) Specific Logic
+                 # https://developers.brevo.com/reference/sendtransacemail
+                 
+                 # Brevo requires 'sender' object {name, email}
+                 # 'to' is list of objects [{email: "..."}]
+                 
+                 payload = {
+                     "sender": {
+                         "name": "TPO Portal", 
+                         "email": sender_email
+                     },
+                     "to": [{"email": r} for r in recipients],
+                     "subject": subject,
+                     "htmlContent": html or body,
+                     "textContent": body
+                 }
+                 headers["api-key"] = api_token
                 
             else:
                 # Mailtrap / Default Logic
@@ -71,11 +106,7 @@ def send_email(subject, recipients, body, html=None):
                     "text": body,
                     "html": html or body
                 }
-            
-            headers = {
-                "Authorization": f"Bearer {api_token}",
-                "Content-Type": "application/json"
-            }
+                headers["Authorization"] = f"Bearer {api_token}"
             
             response = requests.post(api_url, json=payload, headers=headers)
             

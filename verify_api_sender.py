@@ -16,9 +16,11 @@ try:
         # This will try to send via SMTP if API vars are missing, which might fail or succeed depending on .env
         # We just want to ensure code path doesn't crash immediately.
         print("Calling send_email...")
-        # send_email("Test", ["test@example.com"], "Body") 
-        # Commented out actual send to avoid spam/errors during this check, 
-        # unless we specifically want to test SMTP.
+        print("Calling send_email...")
+        # Use a safe test email or the one from config
+        recipient = app.config.get('MAIL_OVERRIDE_RECIPIENT') or app.config.get('MAIL_USERNAME') or "test@example.com"
+        success, msg = send_email("Test Subject", [recipient], "Test Body") 
+        print(f"Send Result: {success} - {msg}")
         print("Verification script passed syntax checks.")
         
 except Exception as e:
